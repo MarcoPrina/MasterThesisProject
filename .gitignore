@@ -2,3 +2,5 @@
 /backend/YoutubeAPI/client_secret.json
 /backend/YoutubeAPI/credentials.json
 /Outputs/
+/venv/
+/.idea/
