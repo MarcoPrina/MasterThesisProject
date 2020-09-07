@@ -44,11 +44,12 @@ class NewLezione(APIView):
         except KeyError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        AnalyzeVideo(video_name).start()
-
         serializer = LezioneSerializer(data=input_data)
         if serializer.is_valid():
             serializer.save()
+
+            AnalyzeVideo(video_name, input_data['nome']).start()
+
             data = serializer.data
             data['message'] = 'Analyzing video'
             return Response(data, status=status.HTTP_201_CREATED)
@@ -56,14 +57,14 @@ class NewLezione(APIView):
 
 
 class AnalyzeVideo(threading.Thread):
-    def __init__(self, video_name):
+    def __init__(self, video_name, lezione_name):
         threading.Thread.__init__(self)
         self.video_name = video_name
+        self.lezione_name = lezione_name
 
     def run(self):
-        print('potato')
         # try:
-        ParseVideo('prova') \
+        ParseVideo(self.lezione_name) \
             .getCaptionFromFile('Outputs/prova/caption.txt')\
             .parseFromCaption(posTag=['S', 'A'])
         #    .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json') \

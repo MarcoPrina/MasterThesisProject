@@ -1,3 +1,5 @@
+import os
+import string, random
 from pathlib import Path
 
 from backend.AggregateData.breakAnalyzer import BreakAnalyzer
@@ -15,9 +17,23 @@ from backend.YoutubeAPI.video2audio import Video2audio
 class ParseVideo():
 
     def __init__(self, directoryName: str) -> None:
-        self.directoryName = directoryName
+        self.directoryName = self.createDirectory(directoryName)
         self.usableCaption = ''
-        Path('Outputs/' + self.directoryName).mkdir(parents=True, exist_ok=True)
+
+
+
+    def createDirectory(self, directoryName: str):
+        print(os.path.isdir(directoryName))
+        print(directoryName)
+        if not os.path.isdir('Outputs/' + directoryName):
+            Path('Outputs/' + directoryName).mkdir(parents=True, exist_ok=True)
+            return directoryName
+        else:
+            return self.createDirectory(directoryName + self.randomword())
+
+    def randomword(self):
+        letters = string.ascii_lowercase
+        return '_' + ''.join(random.choice(letters) for i in range(4))
 
     def getCaptionFromVideo(self, videoName: str, pathCredentials: str):
         speech = Speech2Text(pathCredentials)
