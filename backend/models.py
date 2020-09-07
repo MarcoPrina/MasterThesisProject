@@ -17,7 +17,7 @@ class Lezioni(models.Model):
     # video =  models.FileField(upload_to='Media/Video/')
 
     def __str__(self):
-        return self.nome
+        return self.corso.nome + ': ' + self.nome
 
 
 class Word(models.Model):
