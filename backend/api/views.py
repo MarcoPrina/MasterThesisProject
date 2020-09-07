@@ -12,24 +12,19 @@ from backend.AggregateData.parseVideo import ParseVideo
 
 from django.core.files.storage import default_storage
 
+from backend.api.serializers import CorsoSerializer
+from backend.models import Corsi
 
-class AnalyzeVideo(threading.Thread):
-    def __init__(self, video_name):
-        threading.Thread.__init__(self)
-        self.video_name = video_name
 
-    def run(self):
-        print('potato')
-        # try:
-        ParseVideo('prova') \
-            .getCaptionFromFile('Media/Output/caption.txt')\
-            .parseFromCaption(posTag=['S', 'A'])
-        #    .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json') \
-        #    .parseFromCaption(posTag=['S', 'A'])  # TODO: togliere nome prova
-        os.remove(self.video_name)
-        os.remove(self.video_name.replace("Video", "Audio", 1) + '.flac')
-        # segnare video come "elaborato"
-        # except Exception:
+class NewCorso(APIView):
+
+    def post(self, request):
+        serializer = CorsoSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UploadVideo(APIView):
@@ -53,3 +48,22 @@ class UploadVideo(APIView):
 
         data = {'Analyzing video'}
         return Response(data, status=status.HTTP_201_CREATED)
+
+
+class AnalyzeVideo(threading.Thread):
+    def __init__(self, video_name):
+        threading.Thread.__init__(self)
+        self.video_name = video_name
+
+    def run(self):
+        print('potato')
+        # try:
+        ParseVideo('prova') \
+            .getCaptionFromFile('Outputs/prova/caption.txt')\
+            .parseFromCaption(posTag=['S', 'A'])
+        #    .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json') \
+        #    .parseFromCaption(posTag=['S', 'A'])  # TODO: togliere nome prova
+        os.remove(self.video_name)
+        # os.remove(self.video_name.replace("Video", "Audio", 1) + '.flac')
+        # segnare video come "elaborato"
+        # except Exception:
