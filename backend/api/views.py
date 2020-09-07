@@ -48,6 +48,7 @@ class NewLezione(APIView):
 
         serializer = LezioneSerializer(data=input_data)
         if serializer.is_valid():
+            serializer.save()
             data = serializer.data
             data['message'] = 'Analyzing video'
             return Response(data, status=status.HTTP_201_CREATED)
