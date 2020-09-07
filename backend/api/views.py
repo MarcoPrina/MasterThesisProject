@@ -1,4 +1,5 @@
 import json
+import os
 
 from django.db import transaction
 from rest_framework import status
@@ -17,13 +18,18 @@ class AnalyzeVideo(threading.Thread):
         threading.Thread.__init__(self)
         self.video_name = video_name
 
-        # helper function to execute the threads
-
     def run(self):
         print('potato')
+        # try:
         ParseVideo('prova') \
-            .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json') \
-            .parseFromCaption(posTag=['S', 'A'])  # TODO: togliere nome prova
+            .getCaptionFromFile('Media/Output/caption.txt')\
+            .parseFromCaption(posTag=['S', 'A'])
+        #    .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json') \
+        #    .parseFromCaption(posTag=['S', 'A'])  # TODO: togliere nome prova
+        os.remove(self.video_name)
+        os.remove(self.video_name.replace("Video", "Audio", 1) + '.flac')
+        # segnare video come "elaborato"
+        # except Exception:
 
 
 class UploadVideo(APIView):
@@ -45,5 +51,5 @@ class UploadVideo(APIView):
 
         AnalyzeVideo(video_name).start()
 
-        data = {'patata'}
+        data = {'Analyzing video'}
         return Response(data, status=status.HTTP_201_CREATED)

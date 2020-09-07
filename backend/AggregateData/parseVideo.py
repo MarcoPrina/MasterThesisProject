@@ -25,6 +25,7 @@ class ParseVideo():
         audioName = videoName.replace("Video", "Audio", 1) + '.flac'
         speech.upload_blob(audioName)
         speech.sample_long_running_recognize(audioName)
+        speech.delete_blob(audioName)
         self.usableCaption = speech.generateFile(self.directoryName)
         return self
 
