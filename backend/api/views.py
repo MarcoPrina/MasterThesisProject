@@ -9,17 +9,20 @@ import threading
 
 from backend.AggregateData.parseVideo import ParseVideo
 
+from django.core.files.storage import default_storage
 
-class thread(threading.Thread):
-    def __init__(self, video):
+
+class AnalyzeVideo(threading.Thread):
+    def __init__(self, video_name):
         threading.Thread.__init__(self)
-        self.video = video
+        self.video_name = video_name
 
         # helper function to execute the threads
 
     def run(self):
+        print('potato')
         ParseVideo('prova') \
-            .getCaptionFromVideo(self.video) \
+            .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json') \
             .parseFromCaption(posTag=['S', 'A'])  # TODO: togliere nome prova
 
 
@@ -36,15 +39,11 @@ class UploadVideo(APIView):
         try:
             video = request.FILES['video']
             input_data.update({'video': video})
+            video_name = default_storage.save('Media/Video/' + video.name, video)
         except KeyError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            thread.start_new_thread(print_time, ("Thread-1", 2,))
-            thread.start_new_thread(print_time, ("Thread-2", 4,))
-        except:
-            print
-            "Error: unable to start thread"
+        AnalyzeVideo(video_name).start()
 
         data = {'patata'}
         return Response(data, status=status.HTTP_201_CREATED)

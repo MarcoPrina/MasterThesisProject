@@ -41,7 +41,7 @@ class Speech2Text():
         bucket = storage.Bucket(self.storage_client, name=bucket_name)
         blob = bucket.blob(destination_blob_name, chunk_size=2621440)
 
-        blob.upload_from_filename('Audio/' + audioName)
+        blob.upload_from_filename(audioName)
 
         print(
             "File {} uploaded to {}.".format(
