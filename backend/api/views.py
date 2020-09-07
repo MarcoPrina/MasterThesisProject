@@ -12,7 +12,7 @@ from backend.AggregateData.parseVideo import ParseVideo
 
 from django.core.files.storage import default_storage
 
-from backend.api.serializers import CorsoSerializer
+from backend.api.serializers import CorsoSerializer, LezioneSerializer
 from backend.models import Corsi
 
 
@@ -27,7 +27,7 @@ class NewCorso(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UploadVideo(APIView):
+class NewLezione(APIView):
 
     @transaction.atomic()
     def post(self, request):
@@ -46,8 +46,12 @@ class UploadVideo(APIView):
 
         AnalyzeVideo(video_name).start()
 
-        data = {'Analyzing video'}
-        return Response(data, status=status.HTTP_201_CREATED)
+        serializer = LezioneSerializer(data=input_data)
+        if serializer.is_valid():
+            data = serializer.data
+            data['message'] = 'Analyzing video'
+            return Response(data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AnalyzeVideo(threading.Thread):

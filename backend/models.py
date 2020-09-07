@@ -2,19 +2,19 @@ from django.db import models
 
 
 class Corsi(models.Model):
-    kiro_url = models.CharField(max_length=200)
+    kiro_url = models.URLField(max_length=200)
     nome = models.CharField(max_length=200)
-    processata = models.BooleanField(default=False, auto_created=True)
 
     def __str__(self):
         return self.nome
 
 
 class Lezioni(models.Model):
-    video_url = models.CharField(max_length=200, unique=True)
+    video_url = models.URLField(max_length=200, unique=True)
     nome = models.CharField(max_length=200)
-    processata = models.BooleanField(default=False, auto_created=True)
     corso = models.ForeignKey(Corsi, on_delete=models.CASCADE)
+    processata = models.BooleanField(default=False, auto_created=True)
+    # video =  models.FileField(upload_to='Media/Video/')
 
     def __str__(self):
         return self.nome
