@@ -92,7 +92,7 @@ class ParseVideo():
         findBinomi.generateFile(directoryName=self.directoryName)
 
         prioritize = Prioritize(sentencesWithToken)
-        prioritize.getOrdered(posTag)
+        prioritize.getOrdered(lezione=self.lezione, posTag=posTag)
         prioritize.generateFile(directoryName=self.directoryName)
 
         breakAnalyzer = BreakAnalyzer(sentencesWithToken)
