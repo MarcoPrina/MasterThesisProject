@@ -14,7 +14,7 @@ from backend.AggregateData.parseVideo import ParseVideo
 from django.core.files.storage import default_storage
 
 from backend.api.serializers import CorsoSerializer, LezioneSerializer
-from backend.models import Corsi
+from backend.models import Corsi, Lezioni
 
 logger = logging.getLogger(__name__)
 
@@ -58,28 +58,32 @@ class NewLezione(APIView):
 class AnalyzeVideo(threading.Thread):
 
 
-    def __init__(self, video_name, lezione):
+    def __init__(self, video_name, serializer):
         threading.Thread.__init__(self)
         self.video_name = video_name
-        self.lezione = lezione
+        self.serializer = serializer
 
     # @transaction.atomic()
     def run(self):
+        logger.error('Error analyzing video of')
         try:
             with transaction.atomic():
-                self.lezione.save()
-                ParseVideo(self.lezione.data) \
+                self.serializer.save()
+                ParseVideo(self.serializer.data) \
                     .getCaptionFromFile('Outputs/prova/caption.txt') \
                     .parseFromCaption(posTag=['S', 'A'])
                 #    .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json') \
                 #    .parseFromCaption(posTag=['S', 'A'])
 
-            # segnare video come "elaborato"
+                lezione = Lezioni.objects.get(pk=self.serializer.data['id'])
+                lezione.processata = True
+                lezione.save()
+
         except Exception as e:
             logger.error('Error analyzing video of "%s" corso in "%s" lesson',
-                          self.lezione.data['corso'],
-                          self.lezione.data['nome'],
-                          exc_info=e)
+                         self.serializer.data['corso'],
+                         self.serializer.data['nome'],
+                         exc_info=e)
 
         os.remove(self.video_name)
         # os.remove(self.video_name.replace("Video", "Audio", 1) + '.flac')

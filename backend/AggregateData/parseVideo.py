@@ -25,8 +25,6 @@ class ParseVideo():
 
 
     def createDirectory(self, directoryName: str):
-        print(os.path.isdir(directoryName))
-        print(directoryName)
         if not os.path.isdir('Outputs/' + directoryName):
             Path('Outputs/' + directoryName).mkdir(parents=True, exist_ok=True)
             return directoryName
