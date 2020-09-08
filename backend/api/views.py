@@ -48,7 +48,7 @@ class NewLezione(APIView):
         if serializer.is_valid():
             serializer.save()
 
-            AnalyzeVideo(video_name, input_data['nome']).start()
+            AnalyzeVideo(video_name, serializer.data).start()
 
             data = serializer.data
             data['message'] = 'Analyzing video'
@@ -57,18 +57,18 @@ class NewLezione(APIView):
 
 
 class AnalyzeVideo(threading.Thread):
-    def __init__(self, video_name, lezione_name):
+    def __init__(self, video_name, lezione):
         threading.Thread.__init__(self)
         self.video_name = video_name
-        self.lezione_name = lezione_name
+        self.lezione = lezione
 
     def run(self):
         # try:
-        ParseVideo(self.lezione_name) \
+        ParseVideo(self.lezione) \
             .getCaptionFromFile('Outputs/prova/caption.txt')\
             .parseFromCaption(posTag=['S', 'A'])
         #    .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json') \
-        #    .parseFromCaption(posTag=['S', 'A'])  # TODO: togliere nome prova
+        #    .parseFromCaption(posTag=['S', 'A'])
         os.remove(self.video_name)
         # os.remove(self.video_name.replace("Video", "Audio", 1) + '.flac')
         # segnare video come "elaborato"

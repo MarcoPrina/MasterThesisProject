@@ -2,6 +2,8 @@ import json
 import os
 from collections import defaultdict
 
+from backend.models import Binomi
+
 
 class FindBinomi():
 
@@ -9,7 +11,7 @@ class FindBinomi():
         self.binomi = []
         self.tokenizedCaptions = tokenizedCaptions
 
-    def searchForTwo(self, posTag=['']) -> json:
+    def searchForTwo(self, lezione, posTag=['']) -> json:
         self.binomi = []
         pre = {}
         first = True
@@ -20,12 +22,16 @@ class FindBinomi():
             if not first and token['pos'].startswith(tuple(posTag)):
                 binomio = pre['word'] + ' ' + token['word']
                 lemmaBinomio = pre['word'][:-1] + ' ' + token['word'][:-1]
-                if(lemmaBinomio in buffBinomi):
+
+                bin = Binomi(word1=pre['word'], word2=token['word'], lezione=lezione, time_stamp=pre['time'])
+                bin.save()
+
+                if (lemmaBinomio in buffBinomi):
                     buffBinomi[lemmaBinomio]['count'] += 1
                 else:
                     buffBinomi[lemmaBinomio] = {
-                        'word':  binomio,
-                        'pos':      pre['pos'] + ' ' + token['pos'],
+                        'word': binomio,
+                        'pos': pre['pos'] + ' ' + token['pos'],
                         'count': 1
                     }
                 first = True
@@ -34,12 +40,12 @@ class FindBinomi():
                 pre = token
 
         for binomio in buffBinomi:
-            buffBinomi[binomio]['tf'] = buffBinomi[binomio]['count']/totBinomi
+            buffBinomi[binomio]['tf'] = buffBinomi[binomio]['count'] / totBinomi
 
         self.binomi = sorted(buffBinomi.items(), key=lambda x: x[1]['count'], reverse=True)
         return self.binomi
 
-    def searchForThree(self, posTag=['']) -> json: #TODO: da riguardare, non va
+    '''def searchForThree(self, posTag=['']) -> json:  # TODO: da riguardare, non va
         self.binomi = []
         pre0 = {}
         pre1 = {}
@@ -56,11 +62,12 @@ class FindBinomi():
                     second = False
                     pre1 = token
                 elif token['pos'].startswith(tuple(posTag)):
-                    buffBinomi[pre0['word'] + ';' + pre0['pos'] + ';' + pre1['word'] + ';' + pre1['pos'] + ';' + token['word'] + ';' + token['pos']] += 1
+                    buffBinomi[pre0['word'] + ';' + pre0['pos'] + ';' + pre1['word'] + ';' + pre1['pos'] + ';' + token[
+                        'word'] + ';' + token['pos']] += 1
                     first = True
                     second = False
         self.binomi = sorted(buffBinomi.items(), key=lambda x: x[1], reverse=True)
-        return self.binomi
+        return self.binomi'''
 
     def generateFile(self, directoryName: str, fileName='binomi'):
         if os.path.exists('Outputs/' + directoryName + "/" + fileName + ".csv"):
@@ -92,5 +99,3 @@ class FindBinomi():
                 str(binomio[1]['tf']) +
                 '\r\n'
             )
-
-

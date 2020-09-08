@@ -12,12 +12,14 @@ from backend.YoutubeAPI.captionDownload import CaptionDownload
 from backend.YoutubeAPI.credentials import YoutubeCredentials
 from backend.YoutubeAPI.speech2text import Speech2Text
 from backend.YoutubeAPI.video2audio import Video2audio
+from backend.models import Lezioni
 
 
 class ParseVideo():
 
-    def __init__(self, directoryName: str) -> None:
-        self.directoryName = self.createDirectory(directoryName)
+    def __init__(self, lezione) -> None:
+        self.lezione = Lezioni.objects.get(pk=lezione['id'])
+        self.directoryName = self.createDirectory(lezione["nome"])
         self.usableCaption = ''
 
 
@@ -86,7 +88,7 @@ class ParseVideo():
     def parse(self, posTag, sentencesWithToken):
 
         findBinomi = FindBinomi(sentencesWithToken)
-        findBinomi.searchForTwo(posTag)
+        findBinomi.searchForTwo(lezione=self.lezione, posTag=posTag)
         findBinomi.generateFile(directoryName=self.directoryName)
 
         prioritize = Prioritize(sentencesWithToken)
