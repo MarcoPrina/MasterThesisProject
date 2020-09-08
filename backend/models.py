@@ -20,7 +20,7 @@ class Lezioni(models.Model):
         return self.corso.nome + ': ' + self.nome
 
 
-class Word(models.Model):
+class Words(models.Model):
     word = models.CharField(max_length=50)
     lezione = models.ForeignKey(Lezioni, on_delete=models.CASCADE)
     time_stamp = models.CharField(max_length=15)
