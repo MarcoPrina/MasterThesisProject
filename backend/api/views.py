@@ -141,7 +141,7 @@ class AnalyzeVideo(threading.Thread):
             with transaction.atomic():
                 self.serializer.save()
                 ParseVideo(self.serializer.data) \
-                    .getCaptionFromFile('Outputs/prova/caption.txt') \
+                    .getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/5/caption.txt') \
                     .parseFromCaption(posTag=['S', 'A'])
                 #    .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json') \
                 #    .parseFromCaption(posTag=['S', 'A'])
