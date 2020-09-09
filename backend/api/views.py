@@ -14,8 +14,9 @@ from backend.AggregateData.parseVideo import ParseVideo
 
 from django.core.files.storage import default_storage
 
-from backend.api.serializers import CorsoSerializer, LezioneSerializer, WordsSerializer
-from backend.models import Corsi, Lezioni, Words
+from backend.AggregateData.tokenize import Tokenize
+from backend.api.serializers import CorsoSerializer, LezioneSerializer, WordsSerializer, BinomiSerializer
+from backend.models import Corsi, Lezioni, Words, Binomi
 
 
 class CorsiAPIView(APIView):
@@ -68,6 +69,37 @@ class RetriveWords(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class RetriveBinomi(APIView):
+
+    def get(self, request):
+        binomio = request.query_params.get('binomio')
+        corsoPk = request.query_params.get('corso')
+        lezionePk = request.query_params.get('lezione')
+
+        if not binomio:
+            return Response('need binomio parameter', status=status.HTTP_400_BAD_REQUEST)
+
+        tokens = Tokenize(binomio).getTokens()
+
+        words = []
+
+        for token in tokens:
+            if True or token['pos'].startswith(tuple(['S', 'A'])): # TODO: serve veramente? oppure cerco direttamente se è contenuto?
+                words.append(token['word'][:-1])
+
+        if lezionePk:
+            lezione = get_lezione(lezionePk)
+            binomi = Binomi.objects.filter(word1__icontains=words, word2__icontains=words, lezione=lezione)
+        elif corsoPk:
+            corso = get_corso(corsoPk)
+            binomi = Binomi.objects.filter(word1__in=words, word2__in=words, lezione__corso=corso)
+        else:
+            return Response('need lezione or corso parameter', status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = BinomiSerializer(binomi, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class NewLezione(APIView):
 
     @transaction.atomic()
@@ -104,6 +136,8 @@ class AnalyzeVideo(threading.Thread):
     # @transaction.atomic()
     def run(self):
         try:
+            # TODO: separare quando crea i caption ( in cui non serve il db) da quando
+            # elabora i dati, ottimizzare per avere più lezioni assieme
             with transaction.atomic():
                 self.serializer.save()
                 ParseVideo(self.serializer.data) \

@@ -23,7 +23,7 @@ class FindBinomi():
                 binomio = pre['word'] + ' ' + token['word']
                 lemmaBinomio = pre['word'][:-1] + ' ' + token['word'][:-1]
 
-                bin = Binomi(word1=pre['word'], word2=token['word'], lezione=lezione, time_stamp=pre['time'])
+                bin = Binomi(word1=pre['word'][:-1], word2=token['word'][:-1], lezione=lezione, time_stamp=pre['time'])
                 bin.save()
 
                 if (lemmaBinomio in buffBinomi):
