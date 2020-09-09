@@ -1,4 +1,4 @@
-from ..models import Corsi, Lezioni
+from ..models import Corsi, Lezioni, Words
 from rest_framework import serializers
 
 
@@ -12,3 +12,9 @@ class LezioneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lezioni
         fields = ['id', 'video_url', 'nome', 'corso']
+
+
+class WordsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Words
+        fields = ['id', 'word', 'lezione', 'time_stamp']

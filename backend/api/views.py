@@ -3,6 +3,7 @@ import logging
 import os
 
 from django.db import transaction
+from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,8 +14,8 @@ from backend.AggregateData.parseVideo import ParseVideo
 
 from django.core.files.storage import default_storage
 
-from backend.api.serializers import CorsoSerializer, LezioneSerializer
-from backend.models import Corsi, Lezioni
+from backend.api.serializers import CorsoSerializer, LezioneSerializer, WordsSerializer
+from backend.models import Corsi, Lezioni, Words
 
 
 class CorsiAPIView(APIView):
@@ -31,6 +32,40 @@ class CorsiAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CorsoDetails(APIView):
+
+    def get(self, request, pk):
+        corso = get_corso(pk)
+        lezioni = Lezioni.objects.filter(corso=corso)
+        serializer = LezioneSerializer(lezioni, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        corso = get_corso(pk)
+        corso.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class RetriveWords(APIView):
+
+    def get(self, request):
+        word = request.query_params.get('word')[:-1]
+        corsoPk = request.query_params.get('corso')
+        lezionePk = request.query_params.get('lezione')
+        if not word:
+            return Response('need word parameter', status=status.HTTP_400_BAD_REQUEST)
+        if lezionePk:
+            lezione = get_lezione(lezionePk)
+            words = Words.objects.filter(word__icontains=word, lezione=lezione)
+        elif corsoPk:
+            corso = get_corso(corsoPk)
+            words = Words.objects.filter(word__icontains=word, lezione__corso=corso)
+        else:
+            return Response('need lezione or corso parameter', status=status.HTTP_400_BAD_REQUEST)
+        serializer = WordsSerializer(words, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class NewLezione(APIView):
@@ -89,3 +124,19 @@ class AnalyzeVideo(threading.Thread):
 
         os.remove(self.video_name)
         # os.remove(self.video_name.replace("Video", "Audio", 1) + '.flac')
+
+
+def get_corso(pk):
+    try:
+        return Corsi.objects.get(pk=pk)
+
+    except Corsi.DoesNotExist:
+        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+
+
+def get_lezione(pk):
+    try:
+        return Lezioni.objects.get(pk=pk)
+
+    except Lezioni.DoesNotExist:
+        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
