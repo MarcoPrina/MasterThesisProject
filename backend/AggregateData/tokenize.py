@@ -35,8 +35,6 @@ class Tokenize():
                             if '<' in remainingLine:
                                 time = remainingLine[remainingLine.find('<')+1:].split('>', 1)[0]
                         token['time'] = time
-                        if token['time'] == '01:10:52.800':
-                            print(token['time'])
                         tokenized.append(token)
 
         self.sentencesWithToken = tokenized
