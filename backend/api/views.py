@@ -16,10 +16,13 @@ from django.core.files.storage import default_storage
 from backend.api.serializers import CorsoSerializer, LezioneSerializer
 from backend.models import Corsi, Lezioni
 
-logger = logging.getLogger(__name__)
 
+class CorsiAPIView(APIView):
 
-class NewCorso(APIView):
+    def get(self, request):
+        corsi = Corsi.objects.all()
+        serializer = CorsoSerializer(corsi, many=True)
+        return Response(serializer.data)
 
     def post(self, request):
         serializer = CorsoSerializer(data=request.data)
@@ -56,7 +59,7 @@ class NewLezione(APIView):
 
 
 class AnalyzeVideo(threading.Thread):
-
+    logger = logging.getLogger(__name__)
 
     def __init__(self, video_name, serializer):
         threading.Thread.__init__(self)
@@ -65,7 +68,6 @@ class AnalyzeVideo(threading.Thread):
 
     # @transaction.atomic()
     def run(self):
-        logger.error('Error analyzing video of')
         try:
             with transaction.atomic():
                 self.serializer.save()
@@ -80,10 +82,10 @@ class AnalyzeVideo(threading.Thread):
                 lezione.save()
 
         except Exception as e:
-            logger.error('Error analyzing video of "%s" corso in "%s" lesson',
-                         self.serializer.data['corso'],
-                         self.serializer.data['nome'],
-                         exc_info=e)
+            self.logger.error('Error analyzing video of "%s" corso in "%s" lesson',
+                              self.serializer.data['corso'],
+                              self.serializer.data['nome'],
+                              exc_info=e)
 
         os.remove(self.video_name)
         # os.remove(self.video_name.replace("Video", "Audio", 1) + '.flac')

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'backend',
 ]
 
+# TODO: controllare logging
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
