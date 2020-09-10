@@ -119,7 +119,7 @@ class NewLezione(APIView):
 
         serializer = LezioneSerializer(data=input_data)
         if serializer.is_valid():
-            AnalyzeVideo(video_name, serializer).start()
+            AnalyzeVideo(video_name, input_data,  serializer).start()
 
             return Response('Analyzing video', status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -128,23 +128,26 @@ class NewLezione(APIView):
 class AnalyzeVideo(threading.Thread):
     logger = logging.getLogger(__name__)
 
-    def __init__(self, video_name, serializer):
+    def __init__(self, video_path, input_data, serializer):
         threading.Thread.__init__(self)
-        self.video_name = video_name
+        self.video_path = video_path
+        self.input_data = input_data
         self.serializer = serializer
 
-    # @transaction.atomic()
     def run(self):
         try:
             # TODO: separare quando crea i caption ( in cui non serve il db) da quando
             # elabora i dati, ottimizzare per avere più lezioni assieme
+
+            parser = ParseVideo(self.input_data)\
+                .getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/2/caption.txt')
+            #    .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json')
+
             with transaction.atomic():
                 self.serializer.save()
-                ParseVideo(self.serializer.data) \
-                    .getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/5/caption.txt') \
-                    .parseFromCaption(posTag=['S', 'A'])
-                #    .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json') \
-                #    .parseFromCaption(posTag=['S', 'A'])
+
+                lezione = Lezioni.objects.get(pk=self.serializer.data['id'])
+                parser.parseFromCaption(lezione=lezione, posTag=['S', 'A'])
 
                 lezione = Lezioni.objects.get(pk=self.serializer.data['id'])
                 lezione.processata = True
@@ -156,7 +159,7 @@ class AnalyzeVideo(threading.Thread):
                               self.serializer.data['nome'],
                               exc_info=e)
 
-        os.remove(self.video_name)
+        os.remove(self.video_path)
         # os.remove(self.video_name.replace("Video", "Audio", 1) + '.flac')
 
 

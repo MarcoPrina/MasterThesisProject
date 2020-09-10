@@ -18,7 +18,6 @@ from backend.models import Lezioni
 class ParseVideo():
 
     def __init__(self, lezione) -> None:
-        self.lezione = Lezioni.objects.get(pk=lezione['id'])
         self.directoryName = self.createDirectory(lezione["nome"])
         self.usableCaption = ''
 
@@ -61,14 +60,14 @@ class ParseVideo():
         self.usableCaption = captionFile.read()
         return self
 
-    def parseFromCaption(self, posTag=['']):
+    def parseFromCaption(self, lezione, posTag=['']):
         tokenizer = Tokenize(self.usableCaption)
         sentencesWithToken = tokenizer.getTokens()
         tokenizer.generateFile(directoryName=self.directoryName)
 
-        self.parse(posTag, sentencesWithToken)
+        self.parse(posTag, sentencesWithToken, lezione)
 
-    def parseFromTokenFile(self, posTag=['']):
+    def parseFromTokenFile(self, lezione, posTag=['']):
         sentencesWithToken = []
         with open('Outputs/' + self.directoryName + '/token.csv') as f:
             next(f)
@@ -80,17 +79,17 @@ class ParseVideo():
                     'pos': data[2],
                 })
 
-        self.parse(posTag, sentencesWithToken)
+        self.parse(posTag, sentencesWithToken, lezione)
 
 
-    def parse(self, posTag, sentencesWithToken):
+    def parse(self, posTag, sentencesWithToken, lezione):
 
         findBinomi = FindBinomi(sentencesWithToken)
-        findBinomi.searchForTwo(lezione=self.lezione, posTag=posTag)
+        findBinomi.searchForTwo(lezione=lezione, posTag=posTag)
         findBinomi.generateFile(directoryName=self.directoryName)
 
         prioritize = Prioritize(sentencesWithToken)
-        prioritize.getOrdered(lezione=self.lezione, posTag=posTag)
+        prioritize.getOrdered(lezione=lezione, posTag=posTag)
         prioritize.generateFile(directoryName=self.directoryName)
 
         breakAnalyzer = BreakAnalyzer(sentencesWithToken)
