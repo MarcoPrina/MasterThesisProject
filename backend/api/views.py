@@ -170,6 +170,7 @@ class AnalyzeVideo(threading.Thread):
 
                 lezione = Lezioni.objects.get(pk=self.serializer.data['id'])
                 parser.parseFromCaption(lezione=lezione, posTag=['S', 'A'])
+                parser.saveOnDB(lezione=lezione)
 
                 lezione = Lezioni.objects.get(pk=self.serializer.data['id'])
                 lezione.processata = True

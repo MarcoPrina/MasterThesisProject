@@ -18,6 +18,7 @@ from backend.models import Lezioni
 class ParseVideo():
 
     def __init__(self, lezione) -> None:
+        self.findBinomi = FindBinomi()
         self.directoryName = self.createDirectory(lezione["nome"])
         self.usableCaption = ''
 
@@ -84,9 +85,7 @@ class ParseVideo():
 
     def parse(self, posTag, sentencesWithToken, lezione):
 
-        findBinomi = FindBinomi(sentencesWithToken)
-        findBinomi.searchForTwo(lezione=lezione, posTag=posTag)
-        findBinomi.generateFile(directoryName=self.directoryName)
+        self.findBinomi.searchForTwo(sentencesWithToken, posTag=posTag)
 
         prioritize = Prioritize(sentencesWithToken)
         prioritize.getOrdered(lezione=lezione, posTag=posTag)
@@ -100,3 +99,6 @@ class ParseVideo():
         lda.findTopic(sentencesWithToken, posTag=posTag, nTopic=8)
         lda.generateFile(directoryName=self.directoryName)
         #lda.display()
+
+    def saveOnDB(self, lezione):
+        self.findBinomi.saveOnDB(lezione=lezione)

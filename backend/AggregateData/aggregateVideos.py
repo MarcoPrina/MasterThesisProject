@@ -46,7 +46,7 @@ class AggregateVideos():
 
         lda = LDA()
         lda.findTopic(sentencesWithToken, posTag=['S', 'A'], nTopic=4)
-        lda.generateFile(directoryName='totalVideo')
+        lda.saveOnDB(directoryName='totalVideo')
         return self
 
     def genereteCommonWords(self):

@@ -42,3 +42,13 @@ class Binomi(models.Model):
 
     def __str__(self):
         return self.word1 + ' ' + self.word2
+
+
+class BinomiCount(models.Model):
+    binomio = models.CharField(max_length=50)
+    lezione = models.ForeignKey(Lezioni, on_delete=models.CASCADE)
+    count = models.IntegerField(db_index=True)
+    tf = models.FloatField()
+
+    def __str__(self):
+        return self.binomio + ' ' + str(self.count)

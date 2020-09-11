@@ -2,29 +2,32 @@ import json
 import os
 from collections import defaultdict
 
-from backend.models import Binomi
+from backend.models import Binomi, BinomiCount
 
 
 class FindBinomi():
 
-    def __init__(self, tokenizedCaptions: []) -> None:
+    def __init__(self) -> None:
         self.binomi = []
-        self.tokenizedCaptions = tokenizedCaptions
+        self.countBinomi = []
 
-    def searchForTwo(self, lezione, posTag=['']) -> json:
+    def searchForTwo(self, tokenizedCaptions, posTag=['']) -> json:
         self.binomi = []
         pre = {}
         first = True
         buffBinomi = {}
         totBinomi = 0
-        for token in self.tokenizedCaptions:
+        for token in tokenizedCaptions:
             totBinomi += 1
             if not first and token['pos'].startswith(tuple(posTag)):
                 binomio = pre['word'] + ' ' + token['word']
                 lemmaBinomio = pre['word'][:-1] + ' ' + token['word'][:-1]
 
-                bin = Binomi(word1=pre['word'][:-1], word2=token['word'][:-1], lezione=lezione, time_stamp=pre['time'])
-                bin.save()
+                self.binomi.append({
+                    'word1': pre['word'][:-1],
+                    'word2': token['word'][:-1],
+                    'time_stamp': pre['time']
+                })
 
                 if (lemmaBinomio in buffBinomi):
                     buffBinomi[lemmaBinomio]['count'] += 1
@@ -42,60 +45,24 @@ class FindBinomi():
         for binomio in buffBinomi:
             buffBinomi[binomio]['tf'] = buffBinomi[binomio]['count'] / totBinomi
 
-        self.binomi = sorted(buffBinomi.items(), key=lambda x: x[1]['count'], reverse=True)
-        return self.binomi
+        self.countBinomi = sorted(buffBinomi.items(), key=lambda x: x[1]['count'], reverse=True)
+        return self
 
-    '''def searchForThree(self, posTag=['']) -> json:  # TODO: da riguardare, non va
-        self.binomi = []
-        pre0 = {}
-        pre1 = {}
-        first = True
-        second = False
-        buffBinomi = defaultdict(int)
-        for sentence in self.tokenizedCaptions['sentences']:
-            for token in sentence['tokens']:
-                if first and token['pos'].startswith('S'):
-                    first = False
-                    second = True
-                    pre0 = token
-                elif second and token['pos'].startswith(tuple(posTag)):
-                    second = False
-                    pre1 = token
-                elif token['pos'].startswith(tuple(posTag)):
-                    buffBinomi[pre0['word'] + ';' + pre0['pos'] + ';' + pre1['word'] + ';' + pre1['pos'] + ';' + token[
-                        'word'] + ';' + token['pos']] += 1
-                    first = True
-                    second = False
-        self.binomi = sorted(buffBinomi.items(), key=lambda x: x[1], reverse=True)
-        return self.binomi'''
-
-    def generateFile(self, directoryName: str, fileName='binomi'):
-        if os.path.exists('Outputs/' + directoryName + "/" + fileName + ".csv"):
-            os.remove('Outputs/' + directoryName + "/" + fileName + ".csv")
-        binomiFile = open('Outputs/' + directoryName + "/" + fileName + ".csv", "a")
-
-        binomiFile.write(
-            'binomio troncato' +
-            ';' +
-            'binomio' +
-            ';' +
-            'pos' +
-            ';' +
-            'count' +
-            ';' +
-            'tf' +
-            '\r\n'
-        )
+    def saveOnDB(self, lezione):
         for binomio in self.binomi:
-            binomiFile.write(
-                binomio[0] +
-                ';' +
-                binomio[1]['word'] +
-                ';' +
-                binomio[1]['pos'] +
-                ';' +
-                str(binomio[1]['count']) +
-                ';' +
-                str(binomio[1]['tf']) +
-                '\r\n'
+            bin = Binomi(
+                word1=binomio['word1'],
+                word2=binomio['word1'],
+                lezione=lezione,
+                time_stamp=binomio['time_stamp']
             )
+            bin.save()
+
+        for binomio in self.countBinomi:
+            bin = BinomiCount(
+                binomio=binomio[1]['word'],
+                lezione=lezione,
+                count=binomio[1]['count'],
+                tf=binomio[1]['tf'],
+            )
+            bin.save()
