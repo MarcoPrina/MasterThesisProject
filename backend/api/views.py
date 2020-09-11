@@ -69,32 +69,53 @@ class RetriveWords(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class RetriveBinomi(APIView):
+class Search(APIView):
 
     def get(self, request):
-        binomio = request.query_params.get('binomio')
+        query = request.query_params.get('query')
         corsoPk = request.query_params.get('corso')
         lezionePk = request.query_params.get('lezione')
 
-        if not binomio:
-            return Response('need binomio parameter', status=status.HTTP_400_BAD_REQUEST)
+        if not query:
+            return Response('need query parameter', status=status.HTTP_400_BAD_REQUEST)
 
-        tokens = Tokenize(binomio).getTokens()
+        tokens = Tokenize(query).getTokens()
 
         words = []
 
         for token in tokens:
-            if True or token['pos'].startswith(tuple(['S', 'A'])): # TODO: serve veramente? oppure cerco direttamente se è contenuto?
+            if token['pos'].startswith(tuple(['S', 'A'])): # TODO: serve veramente? oppure cerco direttamente se è contenuto?
                 words.append(token['word'][:-1])
 
-        if lezionePk:
-            lezione = get_lezione(lezionePk)
-            binomi = Binomi.objects.filter(word1__icontains=words, word2__icontains=words, lezione=lezione)
-        elif corsoPk:
-            corso = get_corso(corsoPk)
-            binomi = Binomi.objects.filter(word1__in=words, word2__in=words, lezione__corso=corso)
+        if len(words) == 0:
+            return Response('fornire una o due parole "nome nome" o "nome aggettivo"', status=status.HTTP_400_BAD_REQUEST)
+
+        if len(words) == 1:
+            if lezionePk:
+                lezione = get_lezione(lezionePk)
+                word = Words.objects.filter(word__iexact=words[0], lezione=lezione)
+            elif corsoPk:
+                corso = get_corso(corsoPk)
+                word = Words.objects.filter(word__iexact=words[0], lezione__corso=corso)
+            else:
+                return Response('need lezione or corso parameter', status=status.HTTP_400_BAD_REQUEST)
+            serializer = WordsSerializer(word, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif len(words) == 2:
+            if lezionePk:
+                lezione = get_lezione(lezionePk)
+                binomi1 = Binomi.objects.filter(word1__icontains=words[0], word2__icontains=words[1], lezione=lezione)
+                binomi2 = Binomi.objects.filter(word1__icontains=words[1], word2__icontains=words[0], lezione=lezione)
+                binomi = binomi1.union(binomi2)
+            elif corsoPk:
+                corso = get_corso(corsoPk)
+                binomi1 = Binomi.objects.filter(word1__icontains=words[0], word2__icontains=words[1], lezione__corso=corso)
+                binomi2 = Binomi.objects.filter(word1__icontains=words[1], word2__icontains=words[0], lezione__corso=corso)
+                binomi = binomi1.union(binomi2)
+            else:
+                return Response('need lezione or corso parameter', status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response('need lezione or corso parameter', status=status.HTTP_400_BAD_REQUEST)
+            return Response('inserire una o due parole al massimo', status=status.HTTP_400_BAD_REQUEST)
 
         serializer = BinomiSerializer(binomi, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -140,9 +161,10 @@ class AnalyzeVideo(threading.Thread):
             # elabora i dati, ottimizzare per avere più lezioni assieme
 
             parser = ParseVideo(self.input_data)\
-                .getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/2/caption.txt')
+                .getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/1/caption.txt')
             #    .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json')
 
+            # TODO: concentrare transaction e fare gestione errore
             with transaction.atomic():
                 self.serializer.save()
 

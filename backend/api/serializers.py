@@ -11,7 +11,7 @@ class CorsoSerializer(serializers.ModelSerializer):
 class LezioneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lezioni
-        fields = ['id', 'video_url', 'nome', 'corso']
+        fields = ['id', 'video_url', 'kiro_url', 'nome', 'corso']
 
 
 class WordsSerializer(serializers.ModelSerializer):
