@@ -164,15 +164,15 @@ class AnalyzeVideo(threading.Thread):
                 .getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/1/caption.txt')
             #    .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json')
 
+            parser.parseFromCaption(posTag=['S', 'A'])
             # TODO: concentrare transaction e fare gestione errore
             with transaction.atomic():
                 self.serializer.save()
 
                 lezione = Lezioni.objects.get(pk=self.serializer.data['id'])
-                parser.parseFromCaption(lezione=lezione, posTag=['S', 'A'])
+
                 parser.saveOnDB(lezione=lezione)
 
-                lezione = Lezioni.objects.get(pk=self.serializer.data['id'])
                 lezione.processata = True
                 lezione.save()
 

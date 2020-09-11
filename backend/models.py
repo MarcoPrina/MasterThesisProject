@@ -28,6 +28,15 @@ class Words(models.Model):
     def __str__(self):
         return self.word
 
+class WordsCount(models.Model):
+    word = models.CharField(max_length=50)
+    lezione = models.ForeignKey(Lezioni, on_delete=models.CASCADE)
+    count = models.IntegerField(db_index=True)
+    tf = models.FloatField()
+
+    def __str__(self):
+        return self.word
+
 
 class Binomi(models.Model):
     word1 = models.CharField(max_length=50)

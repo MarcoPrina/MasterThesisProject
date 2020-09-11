@@ -2,24 +2,26 @@ import json
 import os
 from collections import defaultdict
 
-from backend.models import Words
+from backend.models import Words, WordsCount
 
 
 class Prioritize():
 
-    def __init__(self, tokenizedCaptions: []) -> None:
-        self.tokenizedCaptions = tokenizedCaptions
+    def __init__(self) -> None:
         self.ordered = []
+        self.words = []
 
-    def getOrdered(self, lezione, posTag=['']) -> list:
+    def getOrdered(self, tokenizedCaptions, posTag=['']) -> list:
         words = {}
         totWords = 0
-        for token in self.tokenizedCaptions:
+        for token in tokenizedCaptions:
             totWords += 1
             if token['pos'].startswith(tuple(posTag)):
 
-                wor = Words(word=token['word'][:-1], time_stamp=token["time"], lezione=lezione)
-                wor.save()
+                self.words.append({
+                    'word': token['word'][:-1],
+                    'time_stamp': token['time']
+                })
 
                 if token['word'] in words:
                     words[token['word']]['counter'] += 1
@@ -36,14 +38,12 @@ class Prioritize():
         self.ordered = sorted(words.items(), key=lambda x: x[1]['counter'], reverse=True)
         return self.ordered
 
-    def generateFile(self, directoryName: str, fileName='words'):
-        if os.path.exists('Outputs/' + directoryName + "/" + fileName + ".csv"):
-            os.remove('Outputs/' + directoryName + "/" + fileName + ".csv")
-        wordsFile = open('Outputs/' + directoryName + "/" + fileName + ".csv", "a")
+    def saveOnDB(self, lezione):
 
-        wordsFile.write('word' + ";" + 'counter' + ";" + 'pos' + ";" + 'tf' + '\r\n')
+        for word in self.words:
+            wor = Words(word=word['word'], time_stamp=word["time_stamp"], lezione=lezione)
+            wor.save()
+
         for word, data in self.ordered:
-            orderedPOS = sorted(data['pos'].items(), key=lambda x: x[1], reverse=True)
-            wordsFile.write(word + ";" + str(data['counter']) + ";" + orderedPOS[0][0] + ";" + str(data['tf']) + '\r\n')
-
-        wordsFile.close()
+            wor = WordsCount(word=word, count=data['counter'], lezione=lezione, tf=data['tf'])
+            wor.save()
