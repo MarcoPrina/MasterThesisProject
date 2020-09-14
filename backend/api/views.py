@@ -143,6 +143,7 @@ class NewLezione(APIView):
             AnalyzeVideo(video_name, input_data,  serializer).start()
 
             return Response('Analyzing video', status=status.HTTP_201_CREATED)
+        os.remove(video_name)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -49,7 +49,7 @@ LOGGING = {
         'file': {
             'level': 'WARNING',
             'class': 'logging.FileHandler',
-            'filename': '/home/marco/PycharmProjects/djangoTesi/Outputs/prova/debug.log',
+            'filename': '/home/marco/PycharmProjects/djangoTesi/debug.log',
         },
     },
     'loggers': {
@@ -105,8 +105,12 @@ WSGI_APPLICATION = 'djangoTesi.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'tesidjango',
+        'USER': 'admin',
+        'PASSWORD': 'calamari fritti in pastella',
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }
 
