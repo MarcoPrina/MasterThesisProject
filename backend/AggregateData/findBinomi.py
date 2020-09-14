@@ -52,7 +52,7 @@ class FindBinomi():
         for binomio in self.binomi:
             bin = Binomi(
                 word1=binomio['word1'],
-                word2=binomio['word1'],
+                word2=binomio['word2'],
                 lezione=lezione,
                 time_stamp=binomio['time_stamp']
             )
