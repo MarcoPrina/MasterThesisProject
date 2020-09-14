@@ -18,6 +18,7 @@ from backend.models import Lezioni
 class ParseVideo():
 
     def __init__(self, lezione) -> None:
+        self.lda = LDA()
         self.prioritize = Prioritize()
         self.findBinomi = FindBinomi()
         self.directoryName = self.createDirectory(lezione["nome"])
@@ -62,14 +63,14 @@ class ParseVideo():
         self.usableCaption = captionFile.read()
         return self
 
-    def parseFromCaption(self, lezione, posTag=['']):
+    def parseFromCaption(self, posTag=['']):
         tokenizer = Tokenize(self.usableCaption)
         sentencesWithToken = tokenizer.getTokens()
         tokenizer.generateFile(directoryName=self.directoryName)
 
-        self.parse(posTag, sentencesWithToken, lezione)
+        self.parse(posTag, sentencesWithToken)
 
-    def parseFromTokenFile(self, lezione, posTag=['']):
+    def parseFromTokenFile(self, posTag=['']):
         sentencesWithToken = []
         with open('Outputs/' + self.directoryName + '/token.csv') as f:
             next(f)
@@ -81,7 +82,7 @@ class ParseVideo():
                     'pos': data[2],
                 })
 
-        self.parse(posTag, sentencesWithToken, lezione)
+        self.parse(posTag, sentencesWithToken)
 
 
     def parse(self, posTag, sentencesWithToken):
@@ -90,16 +91,9 @@ class ParseVideo():
 
         self.prioritize.getOrdered(sentencesWithToken, posTag=posTag)
 
-
-        breakAnalyzer = BreakAnalyzer(sentencesWithToken)
-        breakAnalyzer.getBreaks()
-        breakAnalyzer.generateFile(directoryName=self.directoryName)
-
-        lda = LDA()
-        lda.findTopic(sentencesWithToken, posTag=posTag, nTopic=8)
-        lda.generateFile(directoryName=self.directoryName)
-        #lda.display()
+        self.lda.findTopic(sentencesWithToken, posTag=posTag, nTopic=8)
 
     def saveOnDB(self, lezione):
         self.findBinomi.saveOnDB(lezione=lezione)
         self.prioritize.saveOnDB(lezione=lezione)
+        self.lda.saveOnDB(lezione=lezione)

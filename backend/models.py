@@ -28,6 +28,7 @@ class Words(models.Model):
     def __str__(self):
         return self.word
 
+
 class WordsCount(models.Model):
     word = models.CharField(max_length=50)
     lezione = models.ForeignKey(Lezioni, on_delete=models.CASCADE)
@@ -35,7 +36,7 @@ class WordsCount(models.Model):
     tf = models.FloatField()
 
     def __str__(self):
-        return self.word
+        return self.word + ' ' + str(self.count)
 
 
 class Binomi(models.Model):
@@ -61,3 +62,20 @@ class BinomiCount(models.Model):
 
     def __str__(self):
         return self.binomio + ' ' + str(self.count)
+
+
+class LdaTopic(models.Model):
+    lezione = models.ForeignKey(Lezioni, on_delete=models.CASCADE)
+    numTopic = models.IntegerField()
+
+    def __str__(self):
+        return self.lezione.nome + ', topic #' + str(self.numTopic)
+
+
+class LdaWord(models.Model):
+    ldaTopic = models.ForeignKey(LdaTopic, on_delete=models.CASCADE)
+    word = models.CharField(max_length=50)
+    weight = models.FloatField()
+
+    def __str__(self):
+        return self.ldaTopic.__str__() + ': ' + self.word + ' * ' + str(self.weight)
