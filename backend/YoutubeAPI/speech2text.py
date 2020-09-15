@@ -49,7 +49,7 @@ class Speech2Text():
             )
         )
 
-    def sample_long_running_recognize(self, audioName: str):
+    def recognize_audio(self, audioName: str):
         storage_uri = 'gs://' + bucket_name + '/' + audioName
 
         # The language of the supplied audio
@@ -70,31 +70,30 @@ class Speech2Text():
         self.result = response.results
         return self.result
 
-    def generateFile(self, directoryName):
-        if os.path.exists('Outputs/' + directoryName + '/caption.txt'):
-            os.remove('Outputs/' + directoryName + '/caption.txt')
-        captionFile = open('Outputs/' + directoryName + '/caption.txt', 'a')
+    def generate_captions(self):
 
-        if os.path.exists('Outputs/' + directoryName + '/text.txt'):
-            os.remove('Outputs/' + directoryName + '/text.txt')
-        textFile = open('Outputs/' + directoryName + '/text.txt', 'a')
+        captions = ''
 
         for sentence in self.result:
             alternative = sentence.alternatives[0]
             for word in alternative.words:
                 if word.start_time.nanos:
-                    captionFile.write(
-                        word.word +
-                        '<0' + str(datetime.timedelta(seconds=word.start_time.seconds,
-                                                      milliseconds=word.start_time.nanos / 1000000))[:-3] + '> '
-                    )
-                else:
-                    captionFile.write(
-                        word.word +
-                        '<0' + str(datetime.timedelta(seconds=word.start_time.seconds)) + '.' + '000' + '> ')
-                textFile.write(word.word + ' ')
-            captionFile.write('\r\n')
-            textFile.write('\r\n')
+                    captions += \
+                        word.word + \
+                        '<0' + \
+                        str(datetime.timedelta(
+                            seconds=word.start_time.seconds,
+                            milliseconds=word.start_time.nanos / 1000000))[:-3] + \
+                        '> '
 
-        captionFile = open('Outputs/' + directoryName + '/caption.txt', 'r')
-        return captionFile.read()
+                else:
+                    captions += \
+                        word.word + \
+                        '<0' +\
+                        str(datetime.timedelta(seconds=word.start_time.seconds)) +\
+                        '.' +\
+                        '000' +\
+                        '> '
+            captions += '\r\n'
+
+        return captions

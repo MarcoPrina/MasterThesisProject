@@ -1,61 +1,27 @@
-import os
-import string, random
-from pathlib import Path
-
-from backend.AggregateData.breakAnalyzer import BreakAnalyzer
-from backend.AggregateData.cropCaption import CropCaption
 from backend.AggregateData.findBinomi import FindBinomi
 from backend.AggregateData.lda import LDA
 from backend.AggregateData.prioritize import Prioritize
 from backend.AggregateData.tokenize import Tokenize
-from backend.YoutubeAPI.captionDownload import CaptionDownload
-from backend.YoutubeAPI.credentials import YoutubeCredentials
 from backend.YoutubeAPI.speech2text import Speech2Text
 from backend.YoutubeAPI.video2audio import Video2audio
-from backend.models import Lezioni
 
 
-class ParseVideo():
+class ParseVideo:
 
-    def __init__(self, lezione) -> None:
+    def __init__(self) -> None:
         self.lda = LDA()
         self.prioritize = Prioritize()
         self.findBinomi = FindBinomi()
-        self.directoryName = self.createDirectory(lezione["nome"])
         self.usableCaption = ''
-
-
-
-    def createDirectory(self, directoryName: str):
-        if not os.path.isdir('Outputs/' + directoryName):
-            Path('Outputs/' + directoryName).mkdir(parents=True, exist_ok=True)
-            return directoryName
-        else:
-            return self.createDirectory(directoryName + self.randomword())
-
-    def randomword(self):
-        letters = string.ascii_lowercase
-        return '_' + ''.join(random.choice(letters) for i in range(4))
 
     def getCaptionFromVideo(self, videoName: str, pathCredentials: str):
         speech = Speech2Text(pathCredentials)
         Video2audio().processVideo(videoName)
         audioName = videoName.replace("Video", "Audio", 1) + '.flac'
         speech.upload_blob(audioName)
-        speech.sample_long_running_recognize(audioName)
+        speech.recognize_audio(audioName)
         speech.delete_blob(audioName)
-        self.usableCaption = speech.generateFile(self.directoryName)
-        return self
-
-    def getCaptionFromID(self, videoID: str, client_secretPATH: str):
-        credentials = YoutubeCredentials(client_secretPATH).get()
-
-        CaptionDownload(credentials).get(videoID, self.directoryName)
-
-        cropCaption = CropCaption(self.directoryName)
-
-        self.usableCaption = cropCaption.getUsableCaption()
-        cropCaption.generateFile()
+        self.usableCaption = speech.generate_captions()
         return self
 
     def getCaptionFromFile(self, captionFileName: str):
@@ -66,13 +32,12 @@ class ParseVideo():
     def parseFromCaption(self, posTag=['']):
         tokenizer = Tokenize(self.usableCaption)
         sentencesWithToken = tokenizer.getTokens()
-        tokenizer.generateFile(directoryName=self.directoryName)
 
         self.parse(posTag, sentencesWithToken)
 
-    def parseFromTokenFile(self, posTag=['']):
+    def parseFromTokenFile(self, token_path, posTag=['']):
         sentencesWithToken = []
-        with open('Outputs/' + self.directoryName + '/token.csv') as f:
+        with open(token_path) as f:
             next(f)
             token = [line.strip().split(';') for line in f]
             for data in token:
@@ -84,13 +49,9 @@ class ParseVideo():
 
         self.parse(posTag, sentencesWithToken)
 
-
     def parse(self, posTag, sentencesWithToken):
-
         self.findBinomi.searchForTwo(sentencesWithToken, posTag=posTag)
-
         self.prioritize.getOrdered(sentencesWithToken, posTag=posTag)
-
         self.lda.findTopic(sentencesWithToken, posTag=posTag, nTopic=8)
 
     def saveOnDB(self, lezione):

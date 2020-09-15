@@ -84,11 +84,13 @@ class Search(APIView):
         words = []
 
         for token in tokens:
-            if token['pos'].startswith(tuple(['S', 'A'])): # TODO: serve veramente? oppure cerco direttamente se è contenuto?
+            if token['pos'].startswith(
+                    tuple(['S', 'A'])):  # TODO: serve veramente? oppure cerco direttamente se è contenuto?
                 words.append(token['word'][:-1])
 
         if len(words) == 0:
-            return Response('fornire una o due parole "nome nome" o "nome aggettivo"', status=status.HTTP_400_BAD_REQUEST)
+            return Response('fornire una o due parole "nome nome" o "nome aggettivo"',
+                            status=status.HTTP_400_BAD_REQUEST)
 
         if len(words) == 1:
             if lezionePk:
@@ -109,8 +111,10 @@ class Search(APIView):
                 binomi = binomi1.union(binomi2)
             elif corsoPk:
                 corso = get_corso(corsoPk)
-                binomi1 = Binomi.objects.filter(word1__icontains=words[0], word2__icontains=words[1], lezione__corso=corso)
-                binomi2 = Binomi.objects.filter(word1__icontains=words[1], word2__icontains=words[0], lezione__corso=corso)
+                binomi1 = Binomi.objects.filter(word1__icontains=words[0], word2__icontains=words[1],
+                                                lezione__corso=corso)
+                binomi2 = Binomi.objects.filter(word1__icontains=words[1], word2__icontains=words[0],
+                                                lezione__corso=corso)
                 binomi = binomi1.union(binomi2)
             else:
                 return Response('need lezione or corso parameter', status=status.HTTP_400_BAD_REQUEST)
@@ -140,7 +144,7 @@ class NewLezione(APIView):
 
         serializer = LezioneSerializer(data=input_data)
         if serializer.is_valid():
-            AnalyzeVideo(video_name, input_data,  serializer).start()
+            AnalyzeVideo(video_name, input_data, serializer).start()
 
             return Response('Analyzing video', status=status.HTTP_201_CREATED)
         os.remove(video_name)
@@ -158,22 +162,16 @@ class AnalyzeVideo(threading.Thread):
 
     def run(self):
         try:
-            # TODO: separare quando crea i caption ( in cui non serve il db) da quando
-            # elabora i dati, ottimizzare per avere più lezioni assieme
-
-            parser = ParseVideo(self.input_data)\
-                .getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/1/caption.txt')
+            parser = ParseVideo() \
+                .getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/2/caption.txt')
             #    .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json')
 
             parser.parseFromCaption(posTag=['S', 'A'])
-            # TODO: concentrare transaction e fare gestione errore
+
             with transaction.atomic():
                 self.serializer.save()
-
                 lezione = Lezioni.objects.get(pk=self.serializer.data['id'])
-
                 parser.saveOnDB(lezione=lezione)
-
                 lezione.processata = True
                 lezione.save()
 
