@@ -1,11 +1,9 @@
-import json
 import logging
 import os
 import re
 import threading
 
 from django.contrib import admin
-from django import forms
 from django.db import transaction
 
 from .AggregateData.parseVideo import ParseVideo
@@ -13,8 +11,9 @@ from .models import Corsi, Lezioni, Binomi, Words, BinomiCount, WordsCount, LdaT
 
 
 class LezioniAdmin(admin.ModelAdmin):
-    # form = LezioniForm
-    list_display = ('corso', 'nome', 'video_url', 'kiro_url')
+    fields = ('corso', 'nome', 'video_url', 'kiro_url', 'processata')
+    readonly_fields = ('processata',)
+    list_display = ('nome', 'corso', 'video_url', 'kiro_url')
 
     def save_model(self, request, obj, form, change):
         video_path = ''
