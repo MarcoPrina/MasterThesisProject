@@ -1,12 +1,6 @@
-import logging
-import os
-import re
-import threading
-
 from django.contrib import admin
-from django.db import transaction
 
-from .AggregateData.parseVideo import ParseVideo
+from .AggregateData.parseVideo import AnalyzeVideo
 from .models import Corsi, Lezioni, Binomi, Words, BinomiCount, WordsCount, LdaTopic, LdaWord
 
 
@@ -20,46 +14,42 @@ class LezioniAdmin(admin.ModelAdmin):
         AnalyzeVideo(video_path, obj).start()
 
 
-class AnalyzeVideo(threading.Thread):
-    logger = logging.getLogger(__name__)
+class CorsiAdmin(admin.ModelAdmin):
+    list_display = ('nome', 'kiro_url')
 
-    def __init__(self, video_path, lezione):
-        threading.Thread.__init__(self)
-        self.video_path = video_path
-        self.lezione = lezione
 
-    def run(self):
-        try:
-            # pattern = re.compile(r"\w")
-            # res = re.sub("[A-Za-z]+", "", self.input_data['nome'])
-            parser = ParseVideo() \
-                .getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/1/caption.txt')
-            #    .getCaptionFromVideo(self.video_path, 'backend/YoutubeAPI/credentials.json')
+def join_binomio(obj):
+    return "%s %s" % (obj.word1, obj.word2)
 
-            parser.parseFromCaption(posTag=['S', 'A'])
 
-            with transaction.atomic():
-                self.lezione.save()
-                parser.saveOnDB(lezione=self.lezione)
-                self.lezione.processata = True
-                self.lezione.save()
+join_binomio.short_description = 'Binomio'
 
-        except Exception as e:
-            self.logger.error('Error analyzing video of "%s" corso in "%s" lesson',
-                              self.lezione.data['corso'],
-                              self.lezione.data['nome'],
-                              exc_info=e)
 
-        # os.remove(self.video_path)
-        # os.remove(self.video_path.replace("Video", "Audio", 1) + '.flac')
+class BinomiAdmin(admin.ModelAdmin):
+    list_display = (join_binomio, 'lezione',)
+
+
+class BinomiCountAdmin(admin.ModelAdmin):
+    list_display = ('binomio', 'lezione', 'count')
+
+
+class WordsAdmin(admin.ModelAdmin):
+    list_display = ('word', 'lezione',)
+
+
+class WordsCountAdmin(admin.ModelAdmin):
+    list_display = ('word', 'lezione', 'count')
+
+
+class LdaWordAdmin(admin.ModelAdmin):
+    list_display = ('word', 'ldaTopic', 'weight')
 
 
 admin.site.register(Lezioni, LezioniAdmin)
-
-admin.site.register(Corsi)
-admin.site.register(Binomi)
-admin.site.register(BinomiCount)
-admin.site.register(Words)
-admin.site.register(WordsCount)
+admin.site.register(Corsi, CorsiAdmin)
+admin.site.register(Binomi, BinomiAdmin)
+admin.site.register(BinomiCount, BinomiCountAdmin)
+admin.site.register(Words, WordsAdmin)
+admin.site.register(WordsCount, WordsCountAdmin)
 admin.site.register(LdaTopic)
-admin.site.register(LdaWord)
+admin.site.register(LdaWord, LdaWordAdmin)
