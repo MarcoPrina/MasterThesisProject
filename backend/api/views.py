@@ -15,7 +15,6 @@ from backend.AggregateData.parseVideo import ParseVideo
 
 from django.core.files.storage import default_storage
 
-from backend.AggregateData.tokenize import Tokenize
 from backend.api.serializers import CorsoSerializer, LezioneSerializer, WordsSerializer, BinomiSerializer
 from backend.models import Corsi, Lezioni, Words, Binomi
 
@@ -27,14 +26,6 @@ class CorsiAPIView(APIView):
         serializer = CorsoSerializer(corsi, many=True)
         return Response(serializer.data)
 
-    def post(self, request):
-        serializer = CorsoSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class CorsoDetails(APIView):
 
@@ -43,11 +34,6 @@ class CorsoDetails(APIView):
         lezioni = Lezioni.objects.filter(corso=corso)
         serializer = LezioneSerializer(lezioni, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def delete(self, request, pk):
-        corso = get_corso(pk)
-        corso.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class RetriveWords(APIView):
@@ -81,7 +67,6 @@ class Search(APIView):
             return Response('need query parameter', status=status.HTTP_400_BAD_REQUEST)
 
         words = [word[:-1] for word in query.split(' ')]
-
 
         ''' tokens = Tokenize(query).getTokens()
         for token in tokens:
@@ -124,69 +109,6 @@ class Search(APIView):
 
         serializer = BinomiSerializer(binomi, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class NewLezione(APIView):
-
-    @transaction.atomic()
-    def post(self, request):
-        input_data = {}
-        try:
-            input_data = json.loads(request.data['data'])
-        except (KeyError, Exception):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            video = request.FILES['video']
-            input_data.update({'video': video})
-            video_name = default_storage.save('Media/Video/' + video.name, video)
-        except KeyError:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = LezioneSerializer(data=input_data)
-        if serializer.is_valid():
-            AnalyzeVideo(video_name, input_data, serializer).start()
-
-            return Response('Analyzing video', status=status.HTTP_201_CREATED)
-        os.remove(video_name)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class AnalyzeVideo(threading.Thread):
-    logger = logging.getLogger(__name__)
-
-    def __init__(self, video_path, input_data, serializer):
-        threading.Thread.__init__(self)
-        self.video_path = video_path
-        self.input_data = input_data
-        self.serializer = serializer
-
-    def run(self):
-        try:
-            pattern = re.compile(r"\w")
-            res = re.sub("[A-Za-z]+", "", self.input_data['nome'])
-            print(int(res))
-            parser = ParseVideo() \
-                .getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/' + res + '/caption.txt')
-            #    .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json')
-
-            parser.parseFromCaption(posTag=['S', 'A'])
-
-            with transaction.atomic():
-                self.serializer.save()
-                lezione = Lezioni.objects.get(pk=self.serializer.data['id'])
-                parser.saveOnDB(lezione=lezione)
-                lezione.processata = True
-                lezione.save()
-
-        except Exception as e:
-            self.logger.error('Error analyzing video of "%s" corso in "%s" lesson',
-                              self.serializer.data['corso'],
-                              self.serializer.data['nome'],
-                              exc_info=e)
-
-        os.remove(self.video_path)
-        # os.remove(self.video_name.replace("Video", "Audio", 1) + '.flac')
 
 
 def get_corso(pk):
