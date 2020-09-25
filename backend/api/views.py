@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 
 from django.db import transaction
 from django.http import HttpResponse
@@ -79,14 +80,14 @@ class Search(APIView):
         if not query:
             return Response('need query parameter', status=status.HTTP_400_BAD_REQUEST)
 
-        tokens = Tokenize(query).getTokens()
+        words = [word[:-1] for word in query.split(' ')]
 
-        words = []
 
+        ''' tokens = Tokenize(query).getTokens()
         for token in tokens:
-            if token['pos'].startswith(
+            if True or token['pos'].startswith(
                     tuple(['S', 'A'])):  # TODO: serve veramente? oppure cerco direttamente se è contenuto?
-                words.append(token['word'][:-1])
+                words.append(token['word'][:-1])'''
 
         if len(words) == 0:
             return Response('fornire una o due parole "nome nome" o "nome aggettivo"',
@@ -162,8 +163,11 @@ class AnalyzeVideo(threading.Thread):
 
     def run(self):
         try:
+            pattern = re.compile(r"\w")
+            res = re.sub("[A-Za-z]+", "", self.input_data['nome'])
+            print(int(res))
             parser = ParseVideo() \
-                .getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/2/caption.txt')
+                .getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/' + res + '/caption.txt')
             #    .getCaptionFromVideo(self.video_name, 'backend/YoutubeAPI/credentials.json')
 
             parser.parseFromCaption(posTag=['S', 'A'])
