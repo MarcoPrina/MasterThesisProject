@@ -1,19 +1,7 @@
-import json
-import logging
-import os
-import re
-
-from django.db import transaction
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-import threading
-
-from backend.AggregateData.parseVideo import ParseVideo
-
-from django.core.files.storage import default_storage
 
 from backend.api.serializers import CorsoSerializer, LezioneSerializer, WordsSerializer, BinomiSerializer
 from backend.models import Corsi, Lezioni, Words, Binomi
