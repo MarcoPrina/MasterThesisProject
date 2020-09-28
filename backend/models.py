@@ -3,7 +3,7 @@ from django.db import models
 
 class Corsi(models.Model):
     kiro_url = models.URLField(max_length=200)
-    nome = models.CharField(max_length=200)
+    nome = models.CharField(max_length=200, unique=True, db_index=True)
 
     def __str__(self):
         return self.nome

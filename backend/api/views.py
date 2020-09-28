@@ -10,7 +10,21 @@ from backend.models import Corsi, Lezioni, Words, Binomi
 class CorsiAPIView(APIView):
 
     def get(self, request):
-        corsi = Corsi.objects.all()
+        nome = request.query_params.get('nome')
+        if nome:
+            corso = Corsi.objects.get(nome__iexact=nome)
+            serializer = CorsoSerializer(corso)
+        else:
+            corsi = Corsi.objects.all()
+            serializer = CorsoSerializer(corsi, many=True)
+        return Response(serializer.data)
+
+
+class HintView(APIView):
+
+    def get(self, request):
+        hint = request.query_params.get('hint')
+        corsi = Corsi.objects.filter(nome__icontains=hint)
         serializer = CorsoSerializer(corsi, many=True)
         return Response(serializer.data)
 

@@ -19,7 +19,13 @@ class WordsSerializer(serializers.ModelSerializer):
         model = Words
         fields = ['id', 'word', 'lezione', 'time_stamp']
 
+
 class BinomiSerializer(serializers.ModelSerializer):
+    word = serializers.SerializerMethodField('get_binomio_name')
+
     class Meta:
         model = Binomi
-        fields = ['id', 'word1', 'word2', 'lezione', 'time_stamp']
+        fields = ['id', 'word', 'lezione', 'time_stamp']
+
+    def get_binomio_name(self, obj):
+        return obj.word1 + ' ' + obj.word2
