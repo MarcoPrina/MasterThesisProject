@@ -1,4 +1,4 @@
-from ..models import Corsi, Lezioni, Words, Binomi
+from ..models import Corsi, Lezioni, Words, Binomi, BinomiCount
 from rest_framework import serializers
 
 
@@ -15,9 +15,14 @@ class LezioneSerializer(serializers.ModelSerializer):
 
 
 class WordsSerializer(serializers.ModelSerializer):
+    wordWithAsterisk = serializers.SerializerMethodField('get_word')
+
     class Meta:
         model = Words
-        fields = ['id', 'word', 'lezione', 'time_stamp']
+        fields = ['id', 'wordWithAsterisk', 'lezione', 'time_stamp']
+
+    def get_word(self, obj):
+        return obj.word + '*'
 
 
 class BinomiSerializer(serializers.ModelSerializer):
@@ -28,4 +33,9 @@ class BinomiSerializer(serializers.ModelSerializer):
         fields = ['id', 'word', 'lezione', 'time_stamp']
 
     def get_binomio_name(self, obj):
-        return obj.word1 + ' ' + obj.word2
+        return obj.word1 + '* ' + obj.word2 + '*'
+
+class BinomiCountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BinomiCount
+        fields = ['id', 'binomio', 'lezione', 'count']

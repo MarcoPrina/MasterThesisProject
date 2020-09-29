@@ -1,10 +1,12 @@
+from django.db.models import Sum
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from backend.api.serializers import CorsoSerializer, LezioneSerializer, WordsSerializer, BinomiSerializer
-from backend.models import Corsi, Lezioni, Words, Binomi
+from backend.api.serializers import CorsoSerializer, LezioneSerializer, WordsSerializer, BinomiSerializer, \
+    BinomiCountSerializer
+from backend.models import Corsi, Lezioni, Words, Binomi, BinomiCount
 
 
 class CorsiAPIView(APIView):
@@ -83,10 +85,10 @@ class Search(APIView):
         if len(words) == 1:
             if lezionePk:
                 lezione = get_lezione(lezionePk)
-                word = Words.objects.filter(word__iexact=words[0], lezione=lezione)
+                word = Words.objects.filter(word__iexact=words[0], lezione=lezione).distinct('word')
             elif corsoPk:
                 corso = get_corso(corsoPk)
-                word = Words.objects.filter(word__iexact=words[0], lezione__corso=corso)
+                word = Words.objects.filter(word__iexact=words[0], lezione__corso=corso).distinct('word')
             else:
                 return Response('need lezione or corso parameter', status=status.HTTP_400_BAD_REQUEST)
             serializer = WordsSerializer(word, many=True)
@@ -94,16 +96,19 @@ class Search(APIView):
         elif len(words) == 2:
             if lezionePk:
                 lezione = get_lezione(lezionePk)
-                binomi1 = Binomi.objects.filter(word1__icontains=words[0], word2__icontains=words[1], lezione=lezione)
-                binomi2 = Binomi.objects.filter(word1__icontains=words[1], word2__icontains=words[0], lezione=lezione)
+                binomi1 = Binomi.objects.filter(word1__icontains=words[0], word2__icontains=words[1], lezione=lezione)\
+                    .distinct('word1', 'word2')
+                binomi2 = Binomi.objects.filter(word1__icontains=words[1], word2__icontains=words[0], lezione=lezione)\
+                    .distinct('word1', 'word2')
                 binomi = binomi1.union(binomi2)
             elif corsoPk:
                 corso = get_corso(corsoPk)
                 binomi1 = Binomi.objects.filter(word1__icontains=words[0], word2__icontains=words[1],
-                                                lezione__corso=corso)
+                                                lezione__corso=corso).distinct('word1', 'word2')
                 binomi2 = Binomi.objects.filter(word1__icontains=words[1], word2__icontains=words[0],
-                                                lezione__corso=corso)
+                                                lezione__corso=corso).distinct('word1', 'word2')
                 binomi = binomi1.union(binomi2)
+
             else:
                 return Response('need lezione or corso parameter', status=status.HTTP_400_BAD_REQUEST)
         else:
