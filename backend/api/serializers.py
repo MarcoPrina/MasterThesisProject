@@ -14,28 +14,44 @@ class LezioneSerializer(serializers.ModelSerializer):
         fields = ['id', 'video_url', 'kiro_url', 'nome', 'corso']
 
 
-class WordsSerializer(serializers.ModelSerializer):
-    wordWithAsterisk = serializers.SerializerMethodField('get_word')
+class WordListSerializer(serializers.ModelSerializer):
+    word = serializers.SerializerMethodField('get_word')
+    list = serializers.SerializerMethodField('list_word')
 
     class Meta:
         model = Words
-        fields = ['id', 'wordWithAsterisk', 'lezione', 'time_stamp']
+        fields = ['word', 'list']
 
     def get_word(self, obj):
         return obj.word + '*'
 
+    def list_word(self, obj):
+        word = Words.objects.filter(word=obj.word)
+        return BinomiSerializer(word, many=True).data
 
-class BinomiSerializer(serializers.ModelSerializer):
+class WordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Words
+        fields = ['id', 'lezione', 'time_stamp']
+
+
+class BinomiListSerializer(serializers.ModelSerializer):
     word = serializers.SerializerMethodField('get_binomio_name')
+    list = serializers.SerializerMethodField('list_binomi')
 
     class Meta:
         model = Binomi
-        fields = ['id', 'word', 'lezione', 'time_stamp']
+        fields = ['word', 'list']
 
     def get_binomio_name(self, obj):
         return obj.word1 + '* ' + obj.word2 + '*'
 
-class BinomiCountSerializer(serializers.ModelSerializer):
+    def list_binomi(self, obj):
+        binomi = Binomi.objects.filter(word1=obj.word1, word2=obj.word2)
+        return BinomiSerializer(binomi, many=True).data
+
+
+class BinomiSerializer(serializers.ModelSerializer):
     class Meta:
-        model = BinomiCount
-        fields = ['id', 'binomio', 'lezione', 'count']
+        model = Binomi
+        fields = ['id', 'lezione', 'time_stamp']

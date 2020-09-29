@@ -4,9 +4,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from backend.api.serializers import CorsoSerializer, LezioneSerializer, WordsSerializer, BinomiSerializer, \
-    BinomiCountSerializer
-from backend.models import Corsi, Lezioni, Words, Binomi, BinomiCount
+from backend.api.serializers import CorsoSerializer, LezioneSerializer, WordListSerializer, BinomiListSerializer
+from backend.models import Corsi, Lezioni, Words, Binomi
 
 
 class CorsiAPIView(APIView):
@@ -56,7 +55,7 @@ class RetriveWords(APIView):
             words = Words.objects.filter(word__icontains=word, lezione__corso=corso)
         else:
             return Response('need lezione or corso parameter', status=status.HTTP_400_BAD_REQUEST)
-        serializer = WordsSerializer(words, many=True)
+        serializer = WordListSerializer(words, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -91,7 +90,7 @@ class Search(APIView):
                 word = Words.objects.filter(word__iexact=words[0], lezione__corso=corso).distinct('word')
             else:
                 return Response('need lezione or corso parameter', status=status.HTTP_400_BAD_REQUEST)
-            serializer = WordsSerializer(word, many=True)
+            serializer = WordListSerializer(word, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         elif len(words) == 2:
             if lezionePk:
@@ -114,7 +113,7 @@ class Search(APIView):
         else:
             return Response('inserire una o due parole al massimo', status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = BinomiSerializer(binomi, many=True)
+        serializer = BinomiListSerializer(binomi, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
