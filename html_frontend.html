@@ -4,7 +4,7 @@
 	<p>Suggerimento: <span id="txtHint"></span></p>
 	<input type='text' id='corso' onkeyup="showHint(this.value)">
 	<button type='button' onclick='findCorso()'>Carca</button>
-	<input type='hidden' id='corsoID' hidden"><br><br>
+	<input type='hidden' id='corsoID'><br><br>
 
 	<label for="lezione">Puoi selezionare una lezione specifica:</label>
 	<select name="lezione" id="lezione" disabled></select><br><br>
@@ -23,15 +23,14 @@
 function showHint(str) {
 	document.getElementById("txtHint").innerHTML = "";
     if (str.length < 2) {		
-		return;
+		  return;
     } else {
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.responseType = 'json'
 		xmlhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				var strHint = ''
+			if (this.readyState === 4 && this.status === 200) {
 				var div = document.createElement('div');
-				if(this.response.length == 0){
+				if(this.response.length === 0){
 					div.innerText = "Nessun risultato trovato, provare con altri nomi"
 				}
 				else	{			
@@ -67,7 +66,7 @@ function findCorso() {
 	xhr.open("GET", "http://localhost:8000/corso?nome=" + corso, true);
 	//xhr.setRequestHeader("X-My-Custom-Header", "some value");
 	xhr.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
+		if (this.readyState === 4 && this.status === 200) {
 			document.getElementById('query').disabled = false
 			document.getElementById('querybtn').disabled = false
 			document.getElementById('corsoID').value = this.response.id
@@ -83,7 +82,7 @@ function setLezioni(IDcorso) {
 	xhr.open("GET", "http://localhost:8000/corso/" + IDcorso, true);
 	//xhr.setRequestHeader("X-My-Custom-Header", "some value");
 	xhr.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
+		if (this.readyState === 4 && this.status === 200) {
 
 			let lezione = document.getElementById('lezione')
 			lezione.disabled = false
@@ -110,7 +109,7 @@ function query() {
 	xhr.open("GET", "http://localhost:8000/search?corso=" + corso + "&lezione=" + lezione + "&query=" + query, true); // da aggiustare
 	//xhr.setRequestHeader("X-My-Custom-Header", "some value");
 	xhr.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
+		if (this.readyState === 4 && this.status === 200) {
 			document.getElementById("result").innerHTML = "";
 			document.getElementById('result').appendChild(makeBinomiList(this.response));
 		}
@@ -153,7 +152,7 @@ function makeTimeList(divId, binomioId) {
 	xhr.open("GET", "https://jsonplaceholder.typicode.com/comments?postId=" + binomioId, true); // da aggiustare
 	//xhr.setRequestHeader("X-My-Custom-Header", "some value");
 	xhr.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
+		if (this.readyState === 4 && this.status === 200) {
 			document.getElementById(divId).innerHTML = "";
 
 			var list = document.createElement('ul');
