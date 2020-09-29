@@ -1,0 +1,178 @@
+<html>
+
+	<label for="corso">Cerca un corso:</label>
+	<p>Suggerimento: <span id="txtHint"></span></p>
+	<input type='text' id='corso' onkeyup="showHint(this.value)">
+	<button type='button' onclick='findCorso()'>Carca</button>
+	<input type='hidden' id='corsoID' hidden"><br><br>
+
+	<label for="lezione">Puoi selezionare una lezione specifica:</label>
+	<select name="lezione" id="lezione" disabled></select><br><br>
+
+	<label for="query">Cerca una o due parole chiave:</label>
+	<input type='text' id='query' disabled>
+	<button type='button' id='querybtn' onclick='query()' disabled>Carca</button><br><br>
+	<div id="result"></div>
+
+
+
+</html>
+
+<script>
+
+function showHint(str) {
+	document.getElementById("txtHint").innerHTML = "";
+    if (str.length < 2) {		
+		return;
+    } else {
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.responseType = 'json'
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var strHint = ''
+				var div = document.createElement('div');
+				if(this.response.length == 0){
+					div.innerText = "Nessun risultato trovato, provare con altri nomi"
+				}
+				else	{			
+					for(var i = 0, l = this.response.length -1; i < l; i++){
+						var link = document.createElement('a');
+						link.innerHTML = this.response[i].nome + ', ';
+						link.setAttribute('onclick', "selectedCorso('" + this.response[i].nome + "')");
+						div.appendChild(link)
+					}
+					var link = document.createElement('a');
+						link.innerHTML = this.response[this.response.length -1].nome + '.';
+						link.setAttribute('onclick', "selectedCorso('" + this.response[this.response.length -1].nome + "')");
+						div.appendChild(link)
+				}
+				document.getElementById("txtHint").appendChild(div);
+			}
+		};
+		xmlhttp.open("GET", "http://localhost:8000/corso/hint?hint=" + str, true);
+		xmlhttp.send();
+	}
+}
+
+function selectedCorso(corso) {
+	document.getElementById("corso").value = corso
+	findCorso()
+}
+
+
+function findCorso() {
+	var corso = document.getElementById("corso").value;
+	var xhr = new XMLHttpRequest();
+	xhr.responseType = 'json'
+	xhr.open("GET", "http://localhost:8000/corso?nome=" + corso, true);
+	//xhr.setRequestHeader("X-My-Custom-Header", "some value");
+	xhr.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			document.getElementById('query').disabled = false
+			document.getElementById('querybtn').disabled = false
+			document.getElementById('corsoID').value = this.response.id
+			setLezioni(this.response.id);
+		}
+	};
+	xhr.send();
+}
+
+function setLezioni(IDcorso) {
+	var xhr = new XMLHttpRequest();
+	xhr.responseType = 'json'
+	xhr.open("GET", "http://localhost:8000/corso/" + IDcorso, true);
+	//xhr.setRequestHeader("X-My-Custom-Header", "some value");
+	xhr.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+
+			let lezione = document.getElementById('lezione')
+			lezione.disabled = false
+			let optionList = lezione.options;
+			let options = this.response
+
+			optionList.add(new Option("Tutte", ""));
+
+			for(var i = 0, l = options.length; i < l; i++){
+				var option = options[i];
+				optionList.add(new Option(option.nome, option.id));
+			}
+		}
+	};
+	xhr.send();
+}
+
+function query() {
+	var corso = document.getElementById("corsoID").value;
+	var lezione = document.getElementById("lezione").value;
+	var query = document.getElementById("query").value;
+	var xhr = new XMLHttpRequest();
+	xhr.responseType = 'json'
+	xhr.open("GET", "http://localhost:8000/search?corso=" + corso + "&lezione=" + lezione + "&query=" + query, true); // da aggiustare
+	//xhr.setRequestHeader("X-My-Custom-Header", "some value");
+	xhr.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			document.getElementById("result").innerHTML = "";
+			document.getElementById('result').appendChild(makeBinomiList(this.response));
+		}
+	};
+	xhr.send();
+}
+
+function makeBinomiList(array) {
+	var list = document.createElement('ul');
+
+	for(var i = 0; i < array.length; i++) {
+		var item = document.createElement('li');
+		var link = document.createElement('a');
+		//link.setAttribute('href', '#');
+
+		var divId = array[i].word.replace(/[^a-zA-Z]/g, "")
+		link.setAttribute('onclick', "document.getElementById('"+ divId + "').style.display = 'block'");
+		link.innerHTML = array[i].word;
+		
+
+		var div = document.createElement('div');
+		div.setAttribute('id',divId);
+		div.style.display = "none"; 
+		div.innerHTML = 'prova provina provona';
+
+		item.appendChild(link);
+		item.appendChild(div);
+
+		list.appendChild(item);
+	}
+
+	return list;
+}
+
+
+
+function makeTimeList(divId, binomioId) {
+	var xhr = new XMLHttpRequest();
+	xhr.responseType = 'json'
+	xhr.open("GET", "https://jsonplaceholder.typicode.com/comments?postId=" + binomioId, true); // da aggiustare
+	//xhr.setRequestHeader("X-My-Custom-Header", "some value");
+	xhr.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			document.getElementById(divId).innerHTML = "";
+
+			var list = document.createElement('ul');
+
+			for(var i = 0; i < this.response.length; i++) {
+				var item = document.createElement('li');
+				var link = document.createElement('a');
+				link.setAttribute('href', 'https://www.kiro.it');
+				link.innerHTML = this.response[i].name// + this.response[i].time + this.response[i].lesson;
+
+				item.appendChild(link);
+
+				list.appendChild(item);
+			}
+
+			document.getElementById(divId).appendChild(list);
+		}
+	}
+	xhr.send();
+}
+
+</script>
