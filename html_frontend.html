@@ -3,7 +3,7 @@
 	<label for="corso">Cerca un corso:</label>
 	<p>Suggerimento: <span id="txtHint"></span></p>
 	<input type='text' id='corso' onkeyup="showHint(this.value)">
-	<button type='button' onclick='findCorso()'>Carca</button>
+	<button class="btnSearch" id="btnCorso" type='button' onclick='findCorso()'>Carca</button>
 	<input type='hidden' id='corsoID'><br><br>
 
 	<label for="lezione">Puoi selezionare una lezione specifica:</label>
@@ -11,7 +11,7 @@
 
 	<label for="query">Cerca una o due parole chiave:</label>
 	<input type='text' id='query' disabled>
-	<button type='button' id='querybtn' onclick='query()' disabled>Carca</button><br><br>
+	<button class="btnSearch" type='button' id='querybtn' onclick='query()' disabled>Carca</button><br><br>
 	<div id="result"></div>
 
 
@@ -19,12 +19,35 @@
 </html>
 
 <script>
+var corsoInput = document.getElementById("corso");
+
+// Execute a function when the user releases a key on the keyboard
+corsoInput.addEventListener("keyup", function(event) {
+  // Number 13 is the "Enter" key on the keyboard
+  if (event.keyCode === 13) {
+    // Cancel the default action, if needed
+    event.preventDefault();
+    // Trigger the button element with a click
+    document.getElementById("btnCorso").click();
+  }
+});
+
+var queryInput = document.getElementById("query");
+
+// Execute a function when the user releases a key on the keyboard
+queryInput.addEventListener("keyup", function(event) {
+  // Number 13 is the "Enter" key on the keyboard
+  if (event.keyCode === 13) {
+    // Cancel the default action, if needed
+    event.preventDefault();
+    // Trigger the button element with a click
+    document.getElementById("querybtn").click();
+  }
+});
 
 function showHint(str) {
 	document.getElementById("txtHint").innerHTML = "";
-    if (str.length < 2) {		
-		  return;
-    } else {
+    if (str.length > 1) {
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.responseType = 'json'
 		xmlhttp.onreadystatechange = function() {
@@ -33,7 +56,7 @@ function showHint(str) {
 				if(this.response.length === 0){
 					div.innerText = "Nessun risultato trovato, provare con altri nomi"
 				}
-				else	{			
+				else	{
 					for(var i = 0, l = this.response.length -1; i < l; i++){
 						var link = document.createElement('a');
 						link.innerHTML = this.response[i].nome + ', ';
@@ -41,9 +64,9 @@ function showHint(str) {
 						div.appendChild(link)
 					}
 					var link = document.createElement('a');
-						link.innerHTML = this.response[this.response.length -1].nome + '.';
-						link.setAttribute('onclick', "selectedCorso('" + this.response[this.response.length -1].nome + "')");
-						div.appendChild(link)
+          link.innerHTML = this.response[this.response.length -1].nome + '.';
+          link.setAttribute('onclick', "selectedCorso('" + this.response[this.response.length -1].nome + "')");
+          div.appendChild(link)
 				}
 				document.getElementById("txtHint").appendChild(div);
 			}
@@ -126,14 +149,14 @@ function makeBinomiList(array) {
 		//link.setAttribute('href', '#');
 
 		var divId = array[i].word.replace(/[^a-zA-Z]/g, "")
-		link.setAttribute('onclick', "document.getElementById('"+ divId + "').style.display = 'block'");
+		link.setAttribute('onclick', "toggleTimeList('"+ divId + "')");
 		link.innerHTML = array[i].word;
-		
+
 
 		var div = document.createElement('div');
 		div.setAttribute('id',divId);
-		div.style.display = "none"; 
-		div.innerHTML = 'prova provina provona';
+		div.style.display = "none";
+		div.appendChild(makeTimeList(array[i].list))
 
 		item.appendChild(link);
 		item.appendChild(div);
@@ -146,32 +169,40 @@ function makeBinomiList(array) {
 
 
 
-function makeTimeList(divId, binomioId) {
-	var xhr = new XMLHttpRequest();
-	xhr.responseType = 'json'
-	xhr.open("GET", "https://jsonplaceholder.typicode.com/comments?postId=" + binomioId, true); // da aggiustare
-	//xhr.setRequestHeader("X-My-Custom-Header", "some value");
-	xhr.onreadystatechange = function() {
-		if (this.readyState === 4 && this.status === 200) {
-			document.getElementById(divId).innerHTML = "";
+function makeTimeList(time_list) {
+  var list = document.createElement('ul');
 
-			var list = document.createElement('ul');
+  for(var i = 0; i < time_list.length; i++) {
+    var item = document.createElement('li');
+    var link = document.createElement('a');
+    var time = time_list[i].time_stamp.split(':')
+    var offset =  Number(time[0])*60*60 +  Number(time[1])*60 +  Number(time[2].split('.')[0])
+    if (offset > 5)
+      offset -= 5
+    link.setAttribute('href', time_list[i].lezione.kiro_url + '#t=' + offset);
+    link.innerHTML = time_list[i].lezione.nome + ': ' + time_list[i].time_stamp;
 
-			for(var i = 0; i < this.response.length; i++) {
-				var item = document.createElement('li');
-				var link = document.createElement('a');
-				link.setAttribute('href', 'https://www.kiro.it');
-				link.innerHTML = this.response[i].name// + this.response[i].time + this.response[i].lesson;
+    item.appendChild(link);
+    list.appendChild(item);
+  }
+  return list
+}
 
-				item.appendChild(link);
-
-				list.appendChild(item);
-			}
-
-			document.getElementById(divId).appendChild(list);
-		}
-	}
-	xhr.send();
+function toggleTimeList(divID) {
+  var x = document.getElementById(divID);
+  if (x.style.display === 'none') {
+    x.style.display = 'block';
+  } else {
+    x.style.display = 'none';
+  }
 }
 
 </script>
+
+<style>
+  .btnSearch {
+      margin-bottom: 10px;
+      margin-left: 10px;
+  }
+
+</style>
