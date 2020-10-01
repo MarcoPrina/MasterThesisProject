@@ -1,4 +1,3 @@
-from django.db.models import Sum
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.response import Response
@@ -90,14 +89,14 @@ class Search(APIView):
                 word = Words.objects.filter(word__iexact=words[0], lezione__corso=corso).distinct('word')
             else:
                 return Response('need lezione or corso parameter', status=status.HTTP_400_BAD_REQUEST)
-            serializer = WordListSerializer(word, many=True)
+            serializer = WordListSerializer(word, context={'corso': corsoPk, 'lezione': lezionePk}, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         elif len(words) == 2:
             if lezionePk:
                 lezione = get_lezione(lezionePk)
-                binomi1 = Binomi.objects.filter(word1__icontains=words[0], word2__icontains=words[1], lezione=lezione)\
+                binomi1 = Binomi.objects.filter(word1__icontains=words[0], word2__icontains=words[1], lezione=lezione) \
                     .distinct('word1', 'word2')
-                binomi2 = Binomi.objects.filter(word1__icontains=words[1], word2__icontains=words[0], lezione=lezione)\
+                binomi2 = Binomi.objects.filter(word1__icontains=words[1], word2__icontains=words[0], lezione=lezione) \
                     .distinct('word1', 'word2')
                 binomi = binomi1.union(binomi2)
             elif corsoPk:
@@ -113,11 +112,11 @@ class Search(APIView):
         else:
             return Response('inserire una o due parole al massimo', status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = BinomiListSerializer(binomi, many=True)
+        serializer = BinomiListSerializer(binomi, context={'corso': corsoPk, 'lezione': lezionePk}, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-def get_corso(pk):
+def get_corso(pk):  # TODO: non vanno
     try:
         return Corsi.objects.get(pk=pk)
 

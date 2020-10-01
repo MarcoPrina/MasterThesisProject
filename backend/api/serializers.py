@@ -1,4 +1,4 @@
-from ..models import Corsi, Lezioni, Words, Binomi, BinomiCount
+from ..models import Corsi, Lezioni, Words, Binomi
 from rest_framework import serializers
 
 
@@ -11,7 +11,7 @@ class CorsoSerializer(serializers.ModelSerializer):
 class LezioneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lezioni
-        fields = ['id', 'video_url', 'kiro_url', 'nome', 'corso']
+        fields = ['id', 'kiro_url', 'nome', 'corso']
 
 
 class WordListSerializer(serializers.ModelSerializer):
@@ -26,10 +26,18 @@ class WordListSerializer(serializers.ModelSerializer):
         return obj.word + '*'
 
     def list_word(self, obj):
-        word = Words.objects.filter(word=obj.word)
+        corso = self.context.get("corso")
+        lezione = self.context.get("lezione")
+        if lezione:
+            word = Words.objects.filter(word=obj.word, lezione=lezione)
+        else:
+            word = Words.objects.filter(word=obj.word, lezione__corso=corso)
         return BinomiSerializer(word, many=True).data
 
+
 class WordSerializer(serializers.ModelSerializer):
+    lezione = LezioneSerializer()
+
     class Meta:
         model = Words
         fields = ['id', 'lezione', 'time_stamp']
@@ -47,11 +55,18 @@ class BinomiListSerializer(serializers.ModelSerializer):
         return obj.word1 + '* ' + obj.word2 + '*'
 
     def list_binomi(self, obj):
-        binomi = Binomi.objects.filter(word1=obj.word1, word2=obj.word2)
+        corso = self.context.get("corso")
+        lezione = self.context.get("lezione")
+        if lezione:
+            binomi = Binomi.objects.filter(word1=obj.word1, word2=obj.word2, lezione=lezione)
+        else:
+            binomi = Binomi.objects.filter(word1=obj.word1, word2=obj.word2, lezione__corso=corso)
         return BinomiSerializer(binomi, many=True).data
 
 
 class BinomiSerializer(serializers.ModelSerializer):
+    lezione = LezioneSerializer()
+
     class Meta:
         model = Binomi
-        fields = ['id', 'lezione', 'time_stamp']
+        fields = ['id', 'lezione', 'lezione', 'time_stamp']
