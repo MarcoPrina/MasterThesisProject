@@ -69,4 +69,4 @@ class BinomiSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Binomi
-        fields = ['id', 'lezione', 'lezione', 'time_stamp']
+        fields = ['id', 'lezione', 'time_stamp']
