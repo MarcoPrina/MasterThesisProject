@@ -75,6 +75,7 @@ class AnalyzeVideo(threading.Thread):
 
     def run(self):
         try:
+            self.lezione.save()
             # pattern = re.compile(r"\w")
             # res = re.sub("[A-Za-z]+", "", self.input_data['nome'])
             parser = ParseVideo() \
@@ -84,13 +85,12 @@ class AnalyzeVideo(threading.Thread):
             parser.parseFromCaption(posTag=['S', 'A'])
 
             with transaction.atomic():
-                self.lezione.save()
                 parser.saveOnDB(lezione=self.lezione)
                 self.lezione.processata = True
                 self.lezione.save()
 
         except Exception as e:
-            self.logger.error('Error analyzing video of "%s" corso in "%s" lesson',
+            self.logger.error('Errore analizzando il corso "%s" nella lezione"%s"',
                               self.lezione.data['corso'],
                               self.lezione.data['nome'],
                               exc_info=e)
