@@ -1,5 +1,8 @@
+from django import forms
 from django.contrib import admin
 from django.contrib.admin import AdminSite
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 from .AggregateData.parseVideo import AnalyzeVideo
 from .models import Corso, Lezione, Binomio, Word, BinomioCount, WordCount, LdaTopic, LdaWord
@@ -15,7 +18,19 @@ class MyAdminSite(AdminSite):
 admin_site = MyAdminSite(name='admin')
 
 
+class LezioniAdminForm(forms.ModelForm):
+    def clean(self):
+        if not len(self.errors) > 0:
+            if self.cleaned_data['video_url'] is None and self.cleaned_data['video'] is None:
+                raise ValidationError(_("Serve inserire o l'url del video o caricarlo direttamente"))
+            if self.cleaned_data['video_url'] is not None and \
+                    'youtube' not in self.cleaned_data['video_url'] and\
+                    'vimeo' not in self.cleaned_data['video_url']:
+                raise ValidationError(_("I link devono essere o di youtube o di vimeo"))
+
+
 class LezioniAdmin(admin.ModelAdmin):
+    form = LezioniAdminForm
     fields = ('corso', 'nome', 'kiro_url', ('video_url', 'video'), 'process_lda', 'processata')
     readonly_fields = ('processata',)
     list_display = ('nome', 'corso', 'video_url', 'kiro_url')
@@ -23,6 +38,7 @@ class LezioniAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         video_path = ''
+        obj.save()
         AnalyzeVideo(video_path, obj).start()
 
 
