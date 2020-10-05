@@ -2,7 +2,7 @@ import json
 import os
 from collections import defaultdict
 
-from backend.models import Binomi, BinomiCount
+from backend.models import Binomio, BinomioCount
 
 
 class FindBinomi():
@@ -50,7 +50,7 @@ class FindBinomi():
 
     def saveOnDB(self, lezione):
         for binomio in self.binomi:
-            bin = Binomi(
+            bin = Binomio(
                 word1=binomio['word1'],
                 word2=binomio['word2'],
                 lezione=lezione,
@@ -59,7 +59,7 @@ class FindBinomi():
             bin.save()
 
         for binomio in self.countBinomi:
-            bin = BinomiCount(
+            bin = BinomioCount(
                 binomio=binomio[1]['word'],
                 lezione=lezione,
                 count=binomio[1]['count'],

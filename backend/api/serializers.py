@@ -1,16 +1,16 @@
-from ..models import Corsi, Lezioni, Words, Binomi
+from ..models import Corso, Lezione, Word, Binomio
 from rest_framework import serializers
 
 
 class CorsoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Corsi
+        model = Corso
         fields = ['id', 'kiro_url', 'nome']
 
 
 class LezioneSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Lezioni
+        model = Lezione
         fields = ['id', 'kiro_url', 'nome', 'corso']
 
 
@@ -19,7 +19,7 @@ class WordListSerializer(serializers.ModelSerializer):
     list = serializers.SerializerMethodField('list_word')
 
     class Meta:
-        model = Words
+        model = Word
         fields = ['word', 'list']
 
     def get_word(self, obj):
@@ -29,9 +29,9 @@ class WordListSerializer(serializers.ModelSerializer):
         corso = self.context.get("corso")
         lezione = self.context.get("lezione")
         if lezione:
-            word = Words.objects.filter(word=obj.word, lezione=lezione)
+            word = Word.objects.filter(word=obj.word, lezione=lezione)
         else:
-            word = Words.objects.filter(word=obj.word, lezione__corso=corso)
+            word = Word.objects.filter(word=obj.word, lezione__corso=corso)
         return BinomiSerializer(word, many=True).data
 
 
@@ -39,7 +39,7 @@ class WordSerializer(serializers.ModelSerializer):
     lezione = LezioneSerializer()
 
     class Meta:
-        model = Words
+        model = Word
         fields = ['id', 'lezione', 'time_stamp']
 
 
@@ -48,7 +48,7 @@ class BinomiListSerializer(serializers.ModelSerializer):
     list = serializers.SerializerMethodField('list_binomi')
 
     class Meta:
-        model = Binomi
+        model = Binomio
         fields = ['word', 'list']
 
     def get_binomio_name(self, obj):
@@ -58,9 +58,9 @@ class BinomiListSerializer(serializers.ModelSerializer):
         corso = self.context.get("corso")
         lezione = self.context.get("lezione")
         if lezione:
-            binomi = Binomi.objects.filter(word1=obj.word1, word2=obj.word2, lezione=lezione)
+            binomi = Binomio.objects.filter(word1=obj.word1, word2=obj.word2, lezione=lezione)
         else:
-            binomi = Binomi.objects.filter(word1=obj.word1, word2=obj.word2, lezione__corso=corso)
+            binomi = Binomio.objects.filter(word1=obj.word1, word2=obj.word2, lezione__corso=corso)
         return BinomiSerializer(binomi, many=True).data
 
 
@@ -68,5 +68,5 @@ class BinomiSerializer(serializers.ModelSerializer):
     lezione = LezioneSerializer()
 
     class Meta:
-        model = Binomi
+        model = Binomio
         fields = ['id', 'lezione', 'time_stamp']

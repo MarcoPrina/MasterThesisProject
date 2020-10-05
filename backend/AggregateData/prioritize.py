@@ -2,7 +2,7 @@ import json
 import os
 from collections import defaultdict
 
-from backend.models import Words, WordsCount
+from backend.models import Word, WordCount
 
 
 class Prioritize():
@@ -41,9 +41,9 @@ class Prioritize():
     def saveOnDB(self, lezione):
 
         for word in self.words:
-            wor = Words(word=word['word'], time_stamp=word["time_stamp"], lezione=lezione)
+            wor = Word(word=word['word'], time_stamp=word["time_stamp"], lezione=lezione)
             wor.save()
 
         for word, data in self.ordered:
-            wor = WordsCount(word=word, count=data['counter'], lezione=lezione, tf=data['tf'])
+            wor = WordCount(word=word, count=data['counter'], lezione=lezione, tf=data['tf'])
             wor.save()

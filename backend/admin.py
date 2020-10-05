@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .AggregateData.parseVideo import AnalyzeVideo
-from .models import Corsi, Lezioni, Binomi, Words, BinomiCount, WordsCount, LdaTopic, LdaWord
+from .models import Corso, Lezione, Binomio, Word, BinomioCount, WordCount, LdaTopic, LdaWord
 
 
 class LezioniAdmin(admin.ModelAdmin):
@@ -45,11 +45,11 @@ class LdaWordAdmin(admin.ModelAdmin):
     list_display = ('word', 'ldaTopic', 'weight')
 
 
-admin.site.register(Lezioni, LezioniAdmin)
-admin.site.register(Corsi, CorsiAdmin)
-admin.site.register(Binomi, BinomiAdmin)
-admin.site.register(BinomiCount, BinomiCountAdmin)
-admin.site.register(Words, WordsAdmin)
-admin.site.register(WordsCount, WordsCountAdmin)
+admin.site.register(Lezione, LezioniAdmin)
+admin.site.register(Corso, CorsiAdmin)
+admin.site.register(Binomio, BinomiAdmin)
+admin.site.register(BinomioCount, BinomiCountAdmin)
+admin.site.register(Word, WordsAdmin)
+admin.site.register(WordCount, WordsCountAdmin)
 admin.site.register(LdaTopic)
 admin.site.register(LdaWord, LdaWordAdmin)
