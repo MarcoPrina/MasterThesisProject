@@ -1,6 +1,7 @@
 /Media/
-/backend/YoutubeAPI/client_secret.json
-/backend/YoutubeAPI/credentials.json
+/Credentials/client_secret.json
+/Credentials/credentials_googleCloud.json
 /Outputs/
 /venv/
 /.idea/
+/Credentials/

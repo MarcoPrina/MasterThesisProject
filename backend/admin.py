@@ -37,9 +37,8 @@ class LezioniAdmin(admin.ModelAdmin):
     search_fields = ['nome']
 
     def save_model(self, request, obj, form, change):
-        video_path = ''
         obj.save()
-        AnalyzeVideo(video_path, obj).start()
+        AnalyzeVideo(obj).start()
 
 
 class CorsiAdmin(admin.ModelAdmin):

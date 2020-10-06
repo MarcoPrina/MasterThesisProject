@@ -4,8 +4,7 @@ import os
 from google.cloud import speech_v1p1beta1
 from google.cloud import storage
 
-# bucket_name = 'audio-lezioni'
-bucket_name = 'testinadimaiale'
+bucket_name = 'audio-lezioni'
 
 
 class Speech2Text():

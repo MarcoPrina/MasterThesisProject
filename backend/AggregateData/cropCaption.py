@@ -1,17 +1,15 @@
 class CropCaption():
 
-    def __init__(self, directoryName: str, captionFileName='caption.vtt') -> None:
-        self.captionFileName = captionFileName
-        self.directoryName = directoryName
-        self.caption = ''
+    def __init__(self, videoID: str) -> None:
+        self.videoID = videoID
 
     def getUsableCaption(self) -> str:
-        with open('Outputs/' + self.directoryName + '/' + self.captionFileName) as f:
+        with open('Media/YoutubeCaptions/' + self.videoID + '.vtt') as f:
             temp_final = f.read().replace('\n', "\r\n").replace('"', "'")
 
-            self.caption = self.remove_duplicate_lines(temp_final)
+            caption = self.remove_duplicate_lines(temp_final)
 
-        return self.caption
+        return caption
 
     def remove_duplicate_lines(self, temp_final: str) -> str:
         final = ''
@@ -20,10 +18,3 @@ class CropCaption():
                 final += line.replace('<c>', '').replace('</c>', '') + "\r\n"
 
         return final
-
-    def generateFile(self, fileName='caption'):
-        text_file = open('Outputs/' + self.directoryName + "/" + fileName + ".txt", "w")
-
-        text_file.write(self.caption)
-
-        text_file.close()

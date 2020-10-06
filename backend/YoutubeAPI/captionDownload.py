@@ -13,7 +13,7 @@ class CaptionDownload():
     def __init__(self, credentials) -> None:
         self.credentials = credentials
 
-    def get(self, videoID, directoryName: str, output_file='caption.vtt'):
+    def get(self, videoID):
         # Disable OAuthlib's HTTPS verification when running locally.
         # *DO NOT* leave this option enabled in production.
         os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # TODO: eliminare in prod
@@ -36,7 +36,7 @@ class CaptionDownload():
             tfmt="vtt"
         )
 
-        fh = io.FileIO('Outputs/' + directoryName + '/' + output_file, "wb")
+        fh = io.FileIO('Media/YoutubeCaptions/' + videoID + '.vtt', "wb")
 
         download = MediaIoBaseDownload(fh, request)
         complete = False
