@@ -7,10 +7,11 @@ from urllib.parse import parse_qs
 
 from django.db import transaction
 
+from backend.AggregateData.aggregateVideos import AggregateVideos
 from backend.AggregateData.cropCaption import CropCaption
 from backend.AggregateData.findBinomi import FindBinomi
 from backend.AggregateData.lda import LDA
-from backend.AggregateData.prioritize import Prioritize
+from backend.AggregateData.findwords import FindWords
 from backend.AggregateData.tokenize import Tokenize
 from backend.YoutubeAPI.captionDownload import CaptionDownload
 from backend.YoutubeAPI.credentials import YoutubeCredentials
@@ -22,7 +23,7 @@ class ParseVideo:
 
     def __init__(self) -> None:
         self.lda = LDA()
-        self.prioritize = Prioritize()
+        self.prioritize = FindWords()
         self.findBinomi = FindBinomi()
         self.usableCaption = ''
 
@@ -56,7 +57,7 @@ class ParseVideo:
         sentencesWithToken = tokenizer.getTokens()
 
         self.findBinomi.searchForTwo(sentencesWithToken, posTag=posTag)
-        self.prioritize.getOrdered(sentencesWithToken, posTag=posTag)
+        self.prioritize.search(sentencesWithToken, posTag=posTag)
         if process_lda:
             self.lda.findTopic(sentencesWithToken, posTag=posTag, nTopic=8)
 
@@ -89,6 +90,10 @@ class AnalyzeVideo(threading.Thread):
                 parser.getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/1/caption.txt')
 
             parser.parse(process_lda=self.lezione.process_lda, posTag=['S', 'A'])
+
+            # AggregateVideos().genereteTotalTokens().genereteTotalLda()
+            # AggregateVideos().genereteCommonWords()
+            # AggregateVideos().genereteCommonBinomi()
 
             with transaction.atomic():
                 parser.saveOnDB(lezione=self.lezione, process_lda=self.lezione.process_lda)

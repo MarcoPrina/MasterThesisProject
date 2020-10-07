@@ -3,7 +3,7 @@ from collections import defaultdict
 from pathlib import Path
 import math
 
-from AggregateData.lda import LDA
+from backend.AggregateData.lda import LDA
 
 
 class AggregateVideos():
@@ -46,7 +46,7 @@ class AggregateVideos():
 
         lda = LDA()
         lda.findTopic(sentencesWithToken, posTag=['S', 'A'], nTopic=4)
-        lda.saveOnDB(directoryName='totalVideo')
+        lda.saveOnDB()
         return self
 
     def genereteCommonWords(self):
