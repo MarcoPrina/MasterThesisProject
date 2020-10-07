@@ -5,13 +5,13 @@ from collections import defaultdict
 from backend.models import Word, WordCount
 
 
-class Prioritize():
+class FindWords():
 
     def __init__(self) -> None:
         self.ordered = []
         self.words = []
 
-    def getOrdered(self, tokenizedCaptions, posTag=['']) -> list:
+    def search(self, tokenizedCaptions, posTag=['']) -> list:
         words = {}
         totWords = 0
         for token in tokenizedCaptions:
