@@ -2,7 +2,7 @@ import json
 import os
 from collections import defaultdict
 
-from backend.models import Word, WordCount
+from backend.models import Word, WordCountForLesson
 
 
 class FindWords():
@@ -45,5 +45,5 @@ class FindWords():
             wor.save()
 
         for word, data in self.ordered:
-            wor = WordCount(word=word, count=data['counter'], lezione=lezione, tf=data['tf'])
+            wor = WordCountForLesson(word=word, count=data['counter'], lezione=lezione, tf=data['tf'])
             wor.save()

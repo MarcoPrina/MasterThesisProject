@@ -15,10 +15,11 @@ class Corso(models.Model):
 class Lezione(models.Model):
     video_url = models.URLField('URL della videolezione', max_length=200, null=True, blank=True,
                                 help_text='Inserire url di Vimeo o Youtube')
-    process_lda = models.BooleanField('Eseguire LDA', default=True)
     kiro_url = models.URLField('URL lezione su kiro', max_length=200)
     nome = models.CharField(max_length=200)
     corso = models.ForeignKey(Corso, on_delete=models.CASCADE)
+    process_lda = models.BooleanField('Eseguire LDA', default=True)
+    process_corso = models.BooleanField('Eseguire analisi completa del corso', default=False)
     processata = models.BooleanField(default=False, auto_created=True)
     video = models.FileField('Carica videolezione', upload_to='Media/Video/', null=True, blank=True, )
 
@@ -41,7 +42,7 @@ class Word(models.Model):
         verbose_name_plural = "Words"
 
 
-class WordCount(models.Model):
+class WordCountForLesson(models.Model):
     word = models.CharField(max_length=50)
     lezione = models.ForeignKey(Lezione, on_delete=models.CASCADE)
     count = models.IntegerField('Conteggio', db_index=True)
@@ -51,7 +52,19 @@ class WordCount(models.Model):
         return self.word + ' ' + str(self.count)
 
     class Meta:
-        verbose_name_plural = "WordsCounts"
+        verbose_name_plural = "WordsCountsForLessons"
+
+
+class WordCountForCourse(models.Model):
+    word = models.CharField(max_length=50)
+    corso = models.ForeignKey(Corso, on_delete=models.CASCADE)
+    count = models.IntegerField('Conteggio', db_index=True)
+
+    def __str__(self):
+        return self.word + ' ' + str(self.count)
+
+    class Meta:
+        verbose_name_plural = "WordsCountsForCourses"
 
 
 class Binomio(models.Model):
@@ -70,7 +83,7 @@ class Binomio(models.Model):
         return self.word1 + ' ' + self.word2
 
 
-class BinomioCount(models.Model):
+class BinomioCountForLesson(models.Model):
     binomio = models.CharField(max_length=50)
     lezione = models.ForeignKey(Lezione, on_delete=models.CASCADE)
     count = models.IntegerField('Conteggio', db_index=True)
@@ -80,7 +93,19 @@ class BinomioCount(models.Model):
         return self.binomio + ' ' + str(self.count)
 
     class Meta:
-        verbose_name_plural = "BinomiCounts"
+        verbose_name_plural = "BinomiCountsForLessons"
+
+
+class BinomioCountForCourse(models.Model):
+    binomio = models.CharField(max_length=50)
+    corso = models.ForeignKey(Corso, on_delete=models.CASCADE)
+    count = models.IntegerField('Conteggio', db_index=True)
+
+    def __str__(self):
+        return self.binomio + ' ' + str(self.count)
+
+    class Meta:
+        verbose_name_plural = "BinomiCountsForCourses"
 
 
 class LdaTopic(models.Model):

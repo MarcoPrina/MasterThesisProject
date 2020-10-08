@@ -1,20 +1,14 @@
-import os
-from collections import defaultdict
-from pathlib import Path
 import math
+import os
+from pathlib import Path
+
+from django.db.models import Sum, F
 
 from backend.AggregateData.lda import LDA
+from backend.models import WordCountForLesson, WordCountForCourse, BinomioCountForCourse, BinomioCountForLesson
 
 
 class AggregateVideos():
-
-    def __init__(self) -> None:
-        Path("Outputs/totalVideo").mkdir(parents=True, exist_ok=True)
-        directory = os.listdir('Outputs')
-        self.lessons = []
-        for lesson in directory:
-            if self.isALesson(lesson):
-                self.lessons.append(lesson)
 
     def genereteTotalTokens(self):
         lessons = os.listdir('Outputs')
@@ -49,98 +43,22 @@ class AggregateVideos():
         lda.saveOnDB()
         return self
 
-    def genereteCommonWords(self):
-        totLesson = 0
-        commonWords = {}
+    def genereteCommonWords(self, lezione):
+        WordCountForCourse.objects.filter(corso_id=lezione.corso).delete()
+        wordsAggregation = WordCountForLesson.objects.filter(lezione__corso=lezione.corso) \
+            .values('lezione__corso', 'word').annotate(corso=F('lezione__corso'), count=Sum('count')) \
+            .values('corso', 'word', 'count')
+        for word in wordsAggregation:
+            wordCountForCourse = WordCountForCourse(corso_id=word['corso'], word=word['word'], count=word['count'])
+            wordCountForCourse.save()
 
-        for lesson in self.lessons:
-            totLesson += 1
-            with open('Outputs/' + lesson + '/words.csv') as f:
-                next(f)
-                words = [line.split(';') for line in f]
-                for word in words:
-                    if word[0] in commonWords:
-                        commonWords[word[0]]['totCount'] += int(word[1])
-                        commonWords[word[0]]['lessons'].append(lesson)
-                        commonWords[word[0]]['tf-idf'][lesson] = float(word[3])
-                    else:
-                        commonWords[word[0]] = {
-                            'word': word[0],
-                            'totCount': int(word[1]),
-                            'lessons': [lesson],
-                            'tf-idf': {lesson: float(word[3])}
-                        }
+    def genereteCommonBinomi(self, lezione):
+        BinomioCountForCourse.objects.filter(corso_id=lezione.corso).delete()
+        binomiAggregation = BinomioCountForLesson.objects.filter(lezione__corso=lezione.corso) \
+            .values('lezione__corso', 'binomio').annotate(corso=F('lezione__corso'), count=Sum('count')) \
+            .values('corso', 'binomio', 'count')
+        for binomio in binomiAggregation:
+            binomioCountForCourse = BinomioCountForCourse(
+                corso_id=binomio['corso'], binomio=binomio['binomio'], count=binomio['count'])
+            binomioCountForCourse.save()
 
-        ordered = sorted(commonWords.items(), key=lambda x: (len(x[1]['lessons']), x[1]['totCount']), reverse=True)
-        self.generateFile('commonWords', ordered)
-        return ordered
-
-    def genereteCommonBinomi(self):
-        totLesson = 0
-        commonBinomi = {}
-
-        for lesson in self.lessons:
-            totLesson += 1
-            with open('Outputs/' + lesson + '/binomi.csv') as f:
-                next(f)
-                binomi = [line.strip().split(';') for line in f]
-                for binomio in binomi:
-                    binomioWord = binomio[0]
-                    if binomioWord in commonBinomi:
-                        commonBinomi[binomioWord]['totCount'] += int(binomio[3])
-                        commonBinomi[binomioWord]['lessons'].append(lesson)
-                        commonBinomi[binomioWord]['tf-idf'][lesson] = float(binomio[4])
-                    else:
-                        commonBinomi[binomioWord] = {
-                            'word': binomio[1],
-                            'totCount': int(binomio[3]),
-                            'lessons': [lesson],
-                            'tf-idf': {lesson: float(binomio[4])}
-                        }
-
-        for binomio in commonBinomi:
-            idf = math.log10(totLesson / len(commonBinomi[binomio]['lessons']))
-            for lesson in commonBinomi[binomio]['tf-idf']:
-                commonBinomi[binomio]['tf-idf'][lesson] = commonBinomi[binomio]['tf-idf'][lesson] * idf
-        ordered = sorted(commonBinomi.items(), key=lambda x: (len(x[1]['lessons']), x[1]['totCount']), reverse=True)
-        self.generateFile('commonBionomi', ordered)
-        return ordered
-
-    def generateFile(self, filename, words):
-        if os.path.exists('Outputs/totalVideo/' + filename + '.csv'):
-            os.remove('Outputs/totalVideo/' + filename + '.csv')
-        commonWordsFile = open('Outputs/totalVideo/' + filename + '.csv', 'a')
-
-        commonWordsFile.write(
-            'word' +
-            ';' +
-            'in lessons' +
-            ';' +
-            'tot count' +
-            ';tf-idf ' +
-            ';tf-idf '.join(sorted(self.lessons, key=lambda x: int(x))) + '\r\n'
-        )
-
-        for word in words:
-            tfIdf = ''
-            for lesson in sorted(self.lessons, key=lambda x: int(x)):
-                if lesson in word[1]['tf-idf']:
-                    tfIdf += str(word[1]['tf-idf'][lesson]) + ';'
-                else:
-                    tfIdf += ';'
-            commonWordsFile.write(
-                word[1]['word'] +
-                ';' +
-                ' '.join(sorted(word[1]['lessons'], key=lambda x: int(x))) +
-                ';' +
-                str(word[1]['totCount']) +
-                ';' +
-                tfIdf +
-                '\r\n')
-
-    def isALesson(self, lesson):
-        try:
-            int(lesson)
-            return True
-        except ValueError:
-            return False

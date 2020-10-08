@@ -5,7 +5,8 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from .AggregateData.parseVideo import AnalyzeVideo
-from .models import Corso, Lezione, Binomio, Word, BinomioCount, WordCount, LdaTopic, LdaWord
+from .models import Corso, Lezione, Binomio, Word, BinomioCountForLesson, WordCountForLesson, LdaTopic, LdaWord, \
+    WordCountForCourse, BinomioCountForCourse
 
 
 class MyAdminSite(AdminSite):
@@ -31,7 +32,7 @@ class LezioniAdminForm(forms.ModelForm):
 
 class LezioniAdmin(admin.ModelAdmin):
     form = LezioniAdminForm
-    fields = ('corso', 'nome', 'kiro_url', ('video_url', 'video'), 'process_lda', 'processata')
+    fields = ('corso', 'nome', 'kiro_url', ('video_url', 'video'), ('process_lda', 'process_corso'), 'processata')
     readonly_fields = ('processata',)
     list_display = ('nome', 'corso', 'video_url', 'kiro_url')
     search_fields = ['nome']
@@ -58,8 +59,13 @@ class BinomiAdmin(admin.ModelAdmin):
     search_fields = ['word1', 'word2']
 
 
-class BinomiCountAdmin(admin.ModelAdmin):
+class BinomiCountLessonAdmin(admin.ModelAdmin):
     list_display = ('binomio', 'lezione', 'count')
+    search_fields = ['binomio']
+
+
+class BinomiCountCourseAdmin(admin.ModelAdmin):
+    list_display = ('binomio', 'corso', 'count')
     search_fields = ['binomio']
 
 
@@ -68,8 +74,13 @@ class WordsAdmin(admin.ModelAdmin):
     search_fields = ['word']
 
 
-class WordsCountAdmin(admin.ModelAdmin):
+class WordsCountLessonAdmin(admin.ModelAdmin):
     list_display = ('word', 'lezione', 'count')
+    search_fields = ['word']
+
+
+class WordsCountCorsoAdmin(admin.ModelAdmin):
+    list_display = ('word', 'corso', 'count')
     search_fields = ['word']
 
 
@@ -81,8 +92,10 @@ class LdaWordAdmin(admin.ModelAdmin):
 admin_site.register(Lezione, LezioniAdmin)
 admin_site.register(Corso, CorsiAdmin)
 admin_site.register(Binomio, BinomiAdmin)
-admin_site.register(BinomioCount, BinomiCountAdmin)
+admin_site.register(BinomioCountForLesson, BinomiCountLessonAdmin)
+admin_site.register(BinomioCountForCourse, BinomiCountCourseAdmin)
 admin_site.register(Word, WordsAdmin)
-admin_site.register(WordCount, WordsCountAdmin)
+admin_site.register(WordCountForLesson, WordsCountLessonAdmin)
+admin_site.register(WordCountForCourse, WordsCountCorsoAdmin)
 admin_site.register(LdaTopic)
 admin_site.register(LdaWord, LdaWordAdmin)

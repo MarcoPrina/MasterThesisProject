@@ -6,6 +6,7 @@ import urllib.parse as urlparse
 from urllib.parse import parse_qs
 
 from django.db import transaction
+from django.db.models import Sum, F
 
 from backend.AggregateData.aggregateVideos import AggregateVideos
 from backend.AggregateData.cropCaption import CropCaption
@@ -17,6 +18,7 @@ from backend.YoutubeAPI.captionDownload import CaptionDownload
 from backend.YoutubeAPI.credentials import YoutubeCredentials
 from backend.YoutubeAPI.speech2text import Speech2Text
 from backend.YoutubeAPI.video2audio import Video2audio
+from backend.models import WordCountForLesson, WordCountForCourse
 
 
 class ParseVideo:
@@ -27,7 +29,7 @@ class ParseVideo:
         self.findBinomi = FindBinomi()
         self.usableCaption = ''
 
-    def getCaptionFromID(self, videoID: str, client_secretPATH: str):
+    def getCaptionFromYoutubeID(self, videoID: str, client_secretPATH: str):
         credentials = YoutubeCredentials(client_secretPATH).get()
 
         CaptionDownload(credentials).get(videoID)
@@ -85,23 +87,24 @@ class AnalyzeVideo(threading.Thread):
             elif 'youtube' in self.lezione.video_url:
                 parsed = urlparse.urlparse(self.lezione.video_url)
                 videoID = parse_qs(parsed.query)['v'][0]
-                parser.getCaptionFromID(videoID, 'Credentials/client_secret_youtube.json')
+                parser.getCaptionFromYoutubeID(videoID, 'Credentials/client_secret_youtube.json')
             else:
                 parser.getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/1/caption.txt')
 
             parser.parse(process_lda=self.lezione.process_lda, posTag=['S', 'A'])
 
-            # AggregateVideos().genereteTotalTokens().genereteTotalLda()
-            # AggregateVideos().genereteCommonWords()
-            # AggregateVideos().genereteCommonBinomi()
-
             with transaction.atomic():
                 parser.saveOnDB(lezione=self.lezione, process_lda=self.lezione.process_lda)
+
+                if self.lezione.process_corso:
+                    AggregateVideos().genereteCommonWords(self.lezione)
+                    AggregateVideos().genereteCommonBinomi(self.lezione)
+
                 self.lezione.processata = True
                 self.lezione.save()
 
         except Exception as e:
-            self.logger.error('Errore analizzando il corso "%s" nella lezione"%s"',
-                              self.lezione.corso.nome,
+            self.logger.error('Errore analizzando la lezione "%s" del corso "%s"',
                               self.lezione.nome,
+                              self.lezione.corso.nome,
                               exc_info=e)

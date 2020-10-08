@@ -2,7 +2,7 @@ import json
 import os
 from collections import defaultdict
 
-from backend.models import Binomio, BinomioCount
+from backend.models import Binomio, BinomioCountForLesson
 
 
 class FindBinomi():
@@ -59,7 +59,7 @@ class FindBinomi():
             bin.save()
 
         for binomio in self.countBinomi:
-            bin = BinomioCount(
+            bin = BinomioCountForLesson(
                 binomio=binomio[1]['word'],
                 lezione=lezione,
                 count=binomio[1]['count'],
