@@ -2,12 +2,10 @@ import json
 import os
 import re
 import subprocess
-
-from tqdm import tqdm
-
 import time
 
 import requests
+from tqdm import tqdm
 
 
 class Tokenize():

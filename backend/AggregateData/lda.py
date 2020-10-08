@@ -1,8 +1,5 @@
-import os
-
-from gensim import corpora
 import gensim
-import pyLDAvis.gensim
+from gensim import corpora
 from gensim.models import CoherenceModel
 
 from backend.models import LdaTopic, LdaWord

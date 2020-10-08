@@ -1,5 +1,4 @@
 import datetime
-import os
 
 from google.cloud import speech_v1p1beta1
 from google.cloud import storage

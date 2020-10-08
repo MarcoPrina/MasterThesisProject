@@ -1,5 +1,6 @@
-from ..models import Corso, Lezione, Word, Binomio
 from rest_framework import serializers
+
+from ..models import Corso, Lezione, Word, Binomio
 
 
 class CorsoSerializer(serializers.ModelSerializer):

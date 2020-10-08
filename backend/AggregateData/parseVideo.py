@@ -1,24 +1,21 @@
 import logging
-import threading
 import os
-
+import threading
 import urllib.parse as urlparse
 from urllib.parse import parse_qs
 
 from django.db import transaction
-from django.db.models import Sum, F
 
 from backend.AggregateData.aggregateVideos import AggregateVideos
 from backend.AggregateData.cropCaption import CropCaption
 from backend.AggregateData.findBinomi import FindBinomi
-from backend.AggregateData.lda import LDA
 from backend.AggregateData.findwords import FindWords
+from backend.AggregateData.lda import LDA
 from backend.AggregateData.tokenize import Tokenize
 from backend.YoutubeAPI.captionDownload import CaptionDownload
 from backend.YoutubeAPI.credentials import YoutubeCredentials
 from backend.YoutubeAPI.speech2text import Speech2Text
 from backend.YoutubeAPI.video2audio import Video2audio
-from backend.models import WordCountForLesson, WordCountForCourse
 
 
 class ParseVideo:
