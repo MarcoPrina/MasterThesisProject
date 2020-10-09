@@ -32,7 +32,12 @@ class HintView(APIView):
 class CorsoDetails(APIView):
 
     def get(self, request, pk):
-        corso = get_corso(pk)
+        try:
+            corso = Corso.objects.get(pk=pk)
+
+        except Corso.DoesNotExist:
+            return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+
         lezioni = Lezione.objects.filter(corso=corso)
         serializer = LezioneSerializer(lezioni, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -47,10 +52,20 @@ class RetriveWords(APIView):
         if not word:
             return Response('need word parameter', status=status.HTTP_400_BAD_REQUEST)
         if lezionePk:
-            lezione = get_lezione(lezionePk)
+            try:
+                lezione = Lezione.objects.get(pk=lezionePk)
+
+            except Lezione.DoesNotExist:
+                return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+
             words = Word.objects.filter(word__icontains=word, lezione=lezione)
         elif corsoPk:
-            corso = get_corso(corsoPk)
+            try:
+                corso = Corso.objects.get(pk=corsoPk)
+
+            except Corso.DoesNotExist:
+                return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+
             words = Word.objects.filter(word__icontains=word, lezione__corso=corso)
         else:
             return Response('need lezione or corso parameter', status=status.HTTP_400_BAD_REQUEST)
@@ -82,10 +97,20 @@ class Search(APIView):
 
         if len(words) == 1:
             if lezionePk:
-                lezione = get_lezione(lezionePk)
+                try:
+                    lezione = Lezione.objects.get(pk=lezionePk)
+
+                except Lezione.DoesNotExist:
+                    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+
                 word = Word.objects.filter(word__iexact=words[0], lezione=lezione).distinct('word')
             elif corsoPk:
-                corso = get_corso(corsoPk)
+                try:
+                    corso = Corso.objects.get(pk=corsoPk)
+
+                except Corso.DoesNotExist:
+                    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+
                 word = Word.objects.filter(word__iexact=words[0], lezione__corso=corso).distinct('word')
             else:
                 return Response('need lezione or corso parameter', status=status.HTTP_400_BAD_REQUEST)
@@ -93,14 +118,24 @@ class Search(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         elif len(words) == 2:
             if lezionePk:
-                lezione = get_lezione(lezionePk)
+                try:
+                    lezione = Lezione.objects.get(pk=lezionePk)
+
+                except Lezione.DoesNotExist:
+                    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+
                 binomi1 = Binomio.objects.filter(word1__icontains=words[0], word2__icontains=words[1], lezione=lezione) \
                     .distinct('word1', 'word2')
                 binomi2 = Binomio.objects.filter(word1__icontains=words[1], word2__icontains=words[0], lezione=lezione) \
                     .distinct('word1', 'word2')
                 binomi = binomi1.union(binomi2)
             elif corsoPk:
-                corso = get_corso(corsoPk)
+                try:
+                    corso = Corso.objects.get(pk=corsoPk)
+
+                except Corso.DoesNotExist:
+                    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+
                 binomi1 = Binomio.objects.filter(word1__icontains=words[0], word2__icontains=words[1],
                                                  lezione__corso=corso).distinct('word1', 'word2')
                 binomi2 = Binomio.objects.filter(word1__icontains=words[1], word2__icontains=words[0],
@@ -114,19 +149,3 @@ class Search(APIView):
 
         serializer = BinomiListSerializer(binomi, context={'corso': corsoPk, 'lezione': lezionePk}, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-def get_corso(pk):  # TODO: non vanno
-    try:
-        return Corso.objects.get(pk=pk)
-
-    except Corso.DoesNotExist:
-        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
-
-
-def get_lezione(pk):
-    try:
-        return Lezione.objects.get(pk=pk)
-
-    except Lezione.DoesNotExist:
-        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
