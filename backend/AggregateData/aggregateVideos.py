@@ -3,42 +3,22 @@ import os
 from django.db.models import Sum, F
 
 from backend.AggregateData.lda import LDA
-from backend.models import WordCountForLesson, WordCountForCourse, BinomioCountForCourse, BinomioCountForLesson
+from backend.models import WordCountForLesson, WordCountForCourse, BinomioCountForCourse, BinomioCountForLesson, \
+    Sentence
 
 
-class AggregateVideos():
+class AggregateVideos:
 
-    def genereteTotalTokens(self):
-        lessons = os.listdir('Outputs')
+    def genereteTotalLda(self, corso):
+        sentences = Sentence.objects.filter(lezione__corso=corso)
 
-        if os.path.exists('Outputs/totalVideo/totalToken.csv'):
-            os.remove('Outputs/totalVideo/totalToken.csv')
-        totalToken = open('Outputs/totalVideo/totalToken.csv', 'a')
-
-        for lesson in lessons:
-            if self.isALesson(lesson):
-                with open('Outputs/' + lesson + '/token.csv') as f:
-                    next(f)
-                    tokens = [line.rstrip() for line in f]
-                    for token in tokens:
-                        totalToken.write(token + ';' + lesson + '\r\n')
-        return self
-
-    def genereteTotalLda(self):
-        sentencesWithToken = []
-        with open('Outputs/totalVideo/totalToken.csv') as f:
-            next(f)
-            token = [line.strip().split(';') for line in f]
-            for data in token:
-                sentencesWithToken.append({
-                    'word': data[0],
-                    'time': data[1],
-                    'pos': data[2],
-                })
+        tokenSentences = []
+        for sentence in sentences:
+            tokenSentences.append(sentence.sentence.split(' '))
 
         lda = LDA()
-        lda.findTopic(sentencesWithToken, posTag=['S', 'A'], nTopic=4)
-        lda.saveOnDB()
+        lda.findTopicFromSenteces(tokenSentences, nTopic=4)
+        lda.saveOnDBCorso(corso)
         return self
 
     def genereteCommonWords(self, corso):

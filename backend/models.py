@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
@@ -138,3 +139,18 @@ class Sentence(models.Model):
     lezione = models.ForeignKey(Lezione, on_delete=models.CASCADE)
     sentence = models.TextField()
     number = models.IntegerField()
+
+
+class LdaCorso(models.Model):
+    corso = models.ForeignKey(Corso, on_delete=models.CASCADE)
+    lda = ArrayField(
+        ArrayField(
+            models.CharField(max_length=30, blank=True)
+        )
+    )
+
+    def __str__(self):
+        return self.corso.nome  # + ', topic #' + str(self.numTopic)
+
+    class Meta:
+        verbose_name_plural = "LdaCorsi"

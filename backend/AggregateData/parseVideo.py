@@ -59,7 +59,7 @@ class ParseVideo:
         self.findBinomi.searchForTwo(sentencesWithToken, posTag=self.posTag)
         self.prioritize.search(sentencesWithToken, posTag=self.posTag)
         if process_lda:
-            self.lda.findTopic(sentencesWithToken, posTag=self.posTag, nTopic=8)
+            self.lda.findTopicFromTokens(sentencesWithToken, posTag=self.posTag, nTopic=8)
 
     def saveOnDB(self, lezione, process_lda):
         self.tokenizer.saveOnDB(lezione=lezione, posTag=self.posTag)

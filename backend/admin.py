@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from .AggregateData.aggregateVideos import AggregateVideos
 from .AggregateData.parseVideo import AnalyzeVideo
 from .models import Corso, Lezione, Binomio, Word, BinomioCountForLesson, WordCountForLesson, LdaTopic, LdaWord, \
-    WordCountForCourse, BinomioCountForCourse, Sentence
+    WordCountForCourse, BinomioCountForCourse, Sentence, LdaCorso
 
 
 class MyAdminSite(AdminSite):
@@ -52,6 +52,7 @@ class CorsiAdmin(admin.ModelAdmin):
         if obj.process_corso:
             AggregateVideos().genereteCommonWords(obj)
             AggregateVideos().genereteCommonBinomi(obj)
+            AggregateVideos().genereteTotalLda(obj)
 
 
 def join_binomio(obj):
@@ -100,6 +101,29 @@ class SentenceAdmin(admin.ModelAdmin):
     list_display = ('lezione', 'number')
 
 
+class LdaCorsoForm(forms.ModelForm):
+
+    lda_topic = forms.Textarea
+
+    def save(self, commit=True):
+        lda_topic = self.cleaned_data.get('lda', None)
+        text = ''
+        for single_lda in lda_topic:
+            text += ' '.join(single_lda) + '\n\r'
+        return super(LdaCorsoForm, self).save(commit=commit)
+
+    class Meta:
+        fields = '__all__'
+        model = LdaCorso
+
+
+class LdaCorsoAdmin(admin.ModelAdmin):
+    form = LdaCorsoForm
+    list_display = ['corso']
+    fields = ('corso', 'lda_topic')
+
+
+
 admin_site.register(Lezione, LezioniAdmin)
 admin_site.register(Corso, CorsiAdmin)
 admin_site.register(Binomio, BinomiAdmin)
@@ -109,5 +133,6 @@ admin_site.register(Word, WordsAdmin)
 admin_site.register(WordCountForLesson, WordsCountLessonAdmin)
 admin_site.register(WordCountForCourse, WordsCountCorsoAdmin)
 admin_site.register(LdaTopic)
+admin_site.register(LdaCorso, LdaCorsoAdmin)
 admin_site.register(LdaWord, LdaWordAdmin)
 admin_site.register(Sentence, SentenceAdmin)
