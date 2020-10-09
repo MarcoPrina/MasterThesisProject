@@ -95,10 +95,6 @@ class AnalyzeVideo(threading.Thread):
             with transaction.atomic():
                 parser.saveOnDB(lezione=self.lezione, process_lda=self.lezione.process_lda)
 
-                if self.lezione.process_corso:
-                    AggregateVideos().genereteCommonWords(self.lezione)
-                    AggregateVideos().genereteCommonBinomi(self.lezione)
-
                 self.lezione.processata = True
                 self.lezione.save()
 

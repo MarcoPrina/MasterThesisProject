@@ -41,18 +41,18 @@ class AggregateVideos():
         lda.saveOnDB()
         return self
 
-    def genereteCommonWords(self, lezione):
-        WordCountForCourse.objects.filter(corso_id=lezione.corso).delete()
-        wordsAggregation = WordCountForLesson.objects.filter(lezione__corso=lezione.corso) \
+    def genereteCommonWords(self, corso):
+        WordCountForCourse.objects.filter(corso=corso).delete()
+        wordsAggregation = WordCountForLesson.objects.filter(lezione__corso=corso) \
             .values('lezione__corso', 'word').annotate(corso=F('lezione__corso'), count=Sum('count')) \
             .values('corso', 'word', 'count')
         for word in wordsAggregation:
             wordCountForCourse = WordCountForCourse(corso_id=word['corso'], word=word['word'], count=word['count'])
             wordCountForCourse.save()
 
-    def genereteCommonBinomi(self, lezione):
-        BinomioCountForCourse.objects.filter(corso_id=lezione.corso).delete()
-        binomiAggregation = BinomioCountForLesson.objects.filter(lezione__corso=lezione.corso) \
+    def genereteCommonBinomi(self, corso):
+        BinomioCountForCourse.objects.filter(corso=corso).delete()
+        binomiAggregation = BinomioCountForLesson.objects.filter(lezione__corso=corso) \
             .values('lezione__corso', 'binomio').annotate(corso=F('lezione__corso'), count=Sum('count')) \
             .values('corso', 'binomio', 'count')
         for binomio in binomiAggregation:

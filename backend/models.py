@@ -4,6 +4,10 @@ from django.db import models
 class Corso(models.Model):
     kiro_url = models.URLField(max_length=200)
     nome = models.CharField(max_length=200, unique=True, db_index=True)
+    process_corso = models.BooleanField(
+        'Eseguire analisi completa del corso',
+        default=False,
+        help_text='Selezionare solo dopo aver aggiunto tutte le lezioni')
 
     def __str__(self):
         return self.nome
@@ -19,7 +23,6 @@ class Lezione(models.Model):
     nome = models.CharField(max_length=200)
     corso = models.ForeignKey(Corso, on_delete=models.CASCADE)
     process_lda = models.BooleanField('Eseguire LDA', default=True)
-    process_corso = models.BooleanField('Eseguire analisi completa del corso', default=False)
     processata = models.BooleanField(default=False, auto_created=True)
     video = models.FileField('Carica videolezione', upload_to='Media/Video/', null=True, blank=True, )
 

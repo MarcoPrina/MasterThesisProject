@@ -4,6 +4,7 @@ from django.contrib.admin import AdminSite
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
+from .AggregateData.aggregateVideos import AggregateVideos
 from .AggregateData.parseVideo import AnalyzeVideo
 from .models import Corso, Lezione, Binomio, Word, BinomioCountForLesson, WordCountForLesson, LdaTopic, LdaWord, \
     WordCountForCourse, BinomioCountForCourse, Sentence
@@ -25,14 +26,14 @@ class LezioniAdminForm(forms.ModelForm):
             if self.cleaned_data['video_url'] is None and self.cleaned_data['video'] is None:
                 raise ValidationError(_("Serve inserire o l'url del video o caricarlo direttamente"))
             if self.cleaned_data['video_url'] is not None and \
-                    'youtube' not in self.cleaned_data['video_url'] and\
+                    'youtube' not in self.cleaned_data['video_url'] and \
                     'vimeo' not in self.cleaned_data['video_url']:
                 raise ValidationError(_("I link devono essere o di youtube o di vimeo"))
 
 
 class LezioniAdmin(admin.ModelAdmin):
     form = LezioniAdminForm
-    fields = ('corso', 'nome', 'kiro_url', ('video_url', 'video'), ('process_lda', 'process_corso'), 'processata')
+    fields = ('corso', 'nome', 'kiro_url', ('video_url', 'video'), 'process_lda', 'processata')
     readonly_fields = ('processata',)
     list_display = ('nome', 'corso', 'video_url', 'kiro_url')
     search_fields = ['nome']
@@ -45,6 +46,12 @@ class LezioniAdmin(admin.ModelAdmin):
 class CorsiAdmin(admin.ModelAdmin):
     list_display = ('nome', 'kiro_url')
     search_fields = ['nome']
+
+    def save_model(self, request, obj, form, change):
+        obj.save()
+        if obj.process_corso:
+            AggregateVideos().genereteCommonWords(obj)
+            AggregateVideos().genereteCommonBinomi(obj)
 
 
 def join_binomio(obj):
