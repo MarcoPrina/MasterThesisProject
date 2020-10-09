@@ -21,10 +21,12 @@ from backend.YoutubeAPI.video2audio import Video2audio
 class ParseVideo:
 
     def __init__(self) -> None:
+        self.tokenizer = Tokenize()
         self.lda = LDA()
         self.prioritize = FindWords()
         self.findBinomi = FindBinomi()
         self.usableCaption = ''
+        self.posTag = ['S', 'A']
 
     def getCaptionFromYoutubeID(self, videoID: str, client_secretPATH: str):
         credentials = YoutubeCredentials(client_secretPATH).get()
@@ -51,16 +53,16 @@ class ParseVideo:
         self.usableCaption = captionFile.read()
         return self
 
-    def parse(self, process_lda, posTag=['']):
-        tokenizer = Tokenize(self.usableCaption)
-        sentencesWithToken = tokenizer.getTokens()
+    def parse(self, process_lda):
+        sentencesWithToken = self.tokenizer.getTokens(self.usableCaption)
 
-        self.findBinomi.searchForTwo(sentencesWithToken, posTag=posTag)
-        self.prioritize.search(sentencesWithToken, posTag=posTag)
+        self.findBinomi.searchForTwo(sentencesWithToken, posTag=self.posTag)
+        self.prioritize.search(sentencesWithToken, posTag=self.posTag)
         if process_lda:
-            self.lda.findTopic(sentencesWithToken, posTag=posTag, nTopic=8)
+            self.lda.findTopic(sentencesWithToken, posTag=self.posTag, nTopic=8)
 
     def saveOnDB(self, lezione, process_lda):
+        self.tokenizer.saveOnDB(lezione=lezione, posTag=self.posTag)
         self.findBinomi.saveOnDB(lezione=lezione)
         self.prioritize.saveOnDB(lezione=lezione)
         if process_lda:
@@ -88,7 +90,7 @@ class AnalyzeVideo(threading.Thread):
             else:
                 parser.getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/1/caption.txt')
 
-            parser.parse(process_lda=self.lezione.process_lda, posTag=['S', 'A'])
+            parser.parse(process_lda=self.lezione.process_lda)
 
             with transaction.atomic():
                 parser.saveOnDB(lezione=self.lezione, process_lda=self.lezione.process_lda)

@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .AggregateData.parseVideo import AnalyzeVideo
 from .models import Corso, Lezione, Binomio, Word, BinomioCountForLesson, WordCountForLesson, LdaTopic, LdaWord, \
-    WordCountForCourse, BinomioCountForCourse
+    WordCountForCourse, BinomioCountForCourse, Sentence
 
 
 class MyAdminSite(AdminSite):
@@ -89,6 +89,10 @@ class LdaWordAdmin(admin.ModelAdmin):
     search_fields = ['word']
 
 
+class SentenceAdmin(admin.ModelAdmin):
+    list_display = ('lezione', 'number')
+
+
 admin_site.register(Lezione, LezioniAdmin)
 admin_site.register(Corso, CorsiAdmin)
 admin_site.register(Binomio, BinomiAdmin)
@@ -99,3 +103,4 @@ admin_site.register(WordCountForLesson, WordsCountLessonAdmin)
 admin_site.register(WordCountForCourse, WordsCountCorsoAdmin)
 admin_site.register(LdaTopic)
 admin_site.register(LdaWord, LdaWordAdmin)
+admin_site.register(Sentence, SentenceAdmin)

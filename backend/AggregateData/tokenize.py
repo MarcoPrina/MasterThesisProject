@@ -7,14 +7,17 @@ import time
 import requests
 from tqdm import tqdm
 
+from backend.models import Sentence
+
 
 class Tokenize():
 
-    def __init__(self, usableCaption: str) -> None:
-        self.sentencesWithToken = {}
-        self.usableCaption = usableCaption.replace('\r\n', '\r').replace('\n', '\r')
+    def __init__(self) -> None:
+        self.tokenizedCaptions = {}
+        self.usableCaption = ''
 
-    def getTokens(self) -> json:
+    def getTokens(self, usableCaption: str) -> json:
+        self.usableCaption = usableCaption.replace('\r\n', '\r').replace('\n', '\r')
         self.startTint()
         file = self.usableCaption.split('\r')
         tokenized = []
@@ -35,7 +38,7 @@ class Tokenize():
                         token['time'] = time
                         tokenized.append(token)
 
-        self.sentencesWithToken = tokenized
+        self.tokenizedCaptions = tokenized
         return tokenized
 
 
@@ -57,13 +60,20 @@ class Tokenize():
             subprocess.Popen(["./tint/tint-server.sh", "-c", "./tint/sampleProps.properties"])
             time.sleep(7)
 
-    def generateFile(self, directoryName: str, fileName='token'):
-        if os.path.exists('Outputs/' + directoryName + "/" + fileName +".csv"):
-            os.remove('Outputs/' + directoryName + "/" + fileName +".csv")
-        tokenFile = open('Outputs/' + directoryName + "/" + fileName +".csv", "a")
-        for token in self.sentencesWithToken:
-            tokenFile.write(token['word'] + ';' + token['time'] + ';' + token['pos'] + '\r\n')
-        tokenFile.close()
+    def saveOnDB(self, lezione, posTag):
+        buffSentence = ''
+        number = 0
+        for num, token in enumerate(self.tokenizedCaptions):
+            if token['pos'].startswith(tuple(posTag)) and len(token['word']) > 2:
+                buffSentence += ' ' + token['word'][:-1]
+            if buffSentence and ('.' in token['word'] or '?' in token['word'] or '!' in token['word']):
+                sentence = Sentence(lezione=lezione, sentence=buffSentence, number=number)
+                sentence.save()
+                number += 1
+                buffSentence = ''
+
+        sentence = Sentence(lezione=lezione, sentence=buffSentence, number=number)
+        sentence.save()
 
 
 

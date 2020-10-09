@@ -16,7 +16,7 @@ class LDA():
         for num, token in enumerate(tokens):
             if token['pos'].startswith(tuple(posTag)) and len(token['word']) > 2:
                 buffTokens.append(token['word'][:-1])
-            if '.' or '?' or '!' in token['word']:
+            if len(buffTokens) > 1 and ('.' in token['word'] or '?' in token['word'] or '!' in token['word']):
                 ldaTokens.append(buffTokens)
                 buffTokens = []
 

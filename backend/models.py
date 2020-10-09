@@ -129,3 +129,9 @@ class LdaWord(models.Model):
 
     class Meta:
         verbose_name_plural = "LdaWords"
+
+
+class Sentence(models.Model):
+    lezione = models.ForeignKey(Lezione, on_delete=models.CASCADE)
+    sentence = models.TextField()
+    number = models.IntegerField()
