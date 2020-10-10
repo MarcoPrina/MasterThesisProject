@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'backend',
     'corsheaders',
+    'django_better_admin_arrayfield',
 ]
 
 # TODO: controllare logging

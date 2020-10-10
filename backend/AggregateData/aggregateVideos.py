@@ -10,7 +10,7 @@ from backend.models import WordCountForLesson, WordCountForCourse, BinomioCountF
 class AggregateVideos:
 
     def genereteTotalLda(self, corso):
-        sentences = Sentence.objects.filter(lezione__corso=corso)
+        sentences = Sentence.objects.filter(lezione__corso=corso).order_by('number')
 
         tokenSentences = []
         for sentence in sentences:

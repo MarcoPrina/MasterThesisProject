@@ -66,7 +66,7 @@ class ParseVideo:
         self.findBinomi.saveOnDB(lezione=lezione)
         self.prioritize.saveOnDB(lezione=lezione)
         if process_lda:
-            self.lda.saveOnDB(lezione=lezione)
+            self.lda.saveOnDBLezione(lezione=lezione)
 
 
 class AnalyzeVideo(threading.Thread):
@@ -79,7 +79,7 @@ class AnalyzeVideo(threading.Thread):
     def run(self):
         try:
             parser = ParseVideo()
-            if self.lezione.video.name is not None:
+            if self.lezione.video.name:
                 parser.getCaptionFromVideo(self.lezione.video.name, 'Credentials/credentials_googleCloud.json')
                 os.remove(self.lezione.video.name)
                 os.remove(self.lezione.video.name.replace("Video", "Audio", 1) + '.flac')
@@ -88,7 +88,7 @@ class AnalyzeVideo(threading.Thread):
                 videoID = parse_qs(parsed.query)['v'][0]
                 parser.getCaptionFromYoutubeID(videoID, 'Credentials/client_secret_youtube.json')
             else:
-                parser.getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/1/caption.txt')
+                parser.getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/8/caption.txt')
 
             parser.parse(process_lda=self.lezione.process_lda)
 

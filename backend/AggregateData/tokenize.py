@@ -72,8 +72,9 @@ class Tokenize():
                 number += 1
                 buffSentence = ''
 
-        sentence = Sentence(lezione=lezione, sentence=buffSentence, number=number)
-        sentence.save()
+        if buffSentence:
+            sentence = Sentence(lezione=lezione, sentence=buffSentence, number=number)
+            sentence.save()
 
 
 

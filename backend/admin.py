@@ -2,12 +2,19 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin import AdminSite
 from django.core.exceptions import ValidationError
+from django.db import models
+from django.forms import ModelForm
 from django.utils.translation import gettext_lazy as _
+
+from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
+from django_better_admin_arrayfield.forms.fields import DynamicArrayField
+from django_better_admin_arrayfield.forms.widgets import DynamicArrayTextareaWidget, DynamicArrayWidget
+from django_better_admin_arrayfield.models.fields import ArrayField
 
 from .AggregateData.aggregateVideos import AggregateVideos
 from .AggregateData.parseVideo import AnalyzeVideo
-from .models import Corso, Lezione, Binomio, Word, BinomioCountForLesson, WordCountForLesson, LdaTopic, LdaWord, \
-    WordCountForCourse, BinomioCountForCourse, Sentence, LdaCorso
+from .models import Corso, Lezione, Binomio, Word, BinomioCountForLesson, WordCountForLesson, \
+    WordCountForCourse, BinomioCountForCourse, Sentence, LdaCorso, LdaLezione
 
 
 class MyAdminSite(AdminSite):
@@ -101,27 +108,34 @@ class SentenceAdmin(admin.ModelAdmin):
     list_display = ('lezione', 'number')
 
 
-class LdaCorsoForm(forms.ModelForm):
-
-    lda_topic = forms.Textarea
-
-    def save(self, commit=True):
-        lda_topic = self.cleaned_data.get('lda', None)
-        text = ''
-        for single_lda in lda_topic:
-            text += ' '.join(single_lda) + '\n\r'
-        return super(LdaCorsoForm, self).save(commit=commit)
-
+class LdaCorsoAdminForm(ModelForm):
     class Meta:
-        fields = '__all__'
         model = LdaCorso
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['lda'].widget.attrs.update(size='60')
 
 
-class LdaCorsoAdmin(admin.ModelAdmin):
-    form = LdaCorsoForm
+class LdaCorsoAdmin(admin.ModelAdmin, DynamicArrayMixin):
+    form = LdaCorsoAdminForm
     list_display = ['corso']
-    fields = ('corso', 'lda_topic')
 
+
+class LdaLezioneAdminForm(ModelForm):
+    class Meta:
+        model = LdaLezione
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['lda'].widget.attrs.update(size='60')
+
+
+class LdaLezioneAdmin(admin.ModelAdmin, DynamicArrayMixin):
+    form = LdaLezioneAdminForm
+    list_display = ['lezione']
 
 
 admin_site.register(Lezione, LezioniAdmin)
@@ -132,7 +146,6 @@ admin_site.register(BinomioCountForCourse, BinomiCountCourseAdmin)
 admin_site.register(Word, WordsAdmin)
 admin_site.register(WordCountForLesson, WordsCountLessonAdmin)
 admin_site.register(WordCountForCourse, WordsCountCorsoAdmin)
-admin_site.register(LdaTopic)
+admin_site.register(LdaLezione, LdaLezioneAdmin)
 admin_site.register(LdaCorso, LdaCorsoAdmin)
-admin_site.register(LdaWord, LdaWordAdmin)
 admin_site.register(Sentence, SentenceAdmin)

@@ -2,7 +2,7 @@ import gensim
 from gensim import corpora
 from gensim.models import CoherenceModel
 
-from backend.models import LdaTopic, LdaWord, LdaCorso
+from backend.models import LdaCorso, LdaLezione
 
 
 class LDA():
@@ -29,13 +29,14 @@ class LDA():
 
         # self.ldamodel = gensim.models.ldamodel.LdaModel(self.corpus, num_topics=nTopic, id2word=self.dictionary, passes=15)
 
-        self.ldamodel = gensim.models.wrappers.LdaMallet(self.mallet_path, corpus=corpus, num_topics=nTopic, id2word=dictionary)
+        self.ldamodel = gensim.models.wrappers.LdaMallet(self.mallet_path, corpus=corpus, num_topics=nTopic,
+                                                         id2word=dictionary)
 
         # self.ldamodel.save('model5.gensim')
 
         # Compute Perplexity
-        #print('\nPerplexity: ',
-         #     self.ldamodel.log_perplexity(self.corpus))  # a measure of how good the model is. lower the better.
+        # print('\nPerplexity: ',
+        #     self.ldamodel.log_perplexity(self.corpus))  # a measure of how good the model is. lower the better.
 
         # Compute Coherence Score
         coherence_model_lda = CoherenceModel(model=self.ldamodel, texts=sentences, coherence='c_v')
@@ -46,26 +47,23 @@ class LDA():
         vis = pyLDAvis.gensim.prepare(self.ldamodel, self.corpus, self.dictionary)
         pyLDAvis.show(vis)'''
 
-    def saveOnDB(self, lezione):
+    def saveOnDBLezione(self, lezione):
 
         topics = self.ldamodel.print_topics(num_words=4)
-        numTopic = 0
+        lda = []
 
         for topic in topics:
-            ldaTopic = LdaTopic(lezione=lezione, numTopic=numTopic)
-            ldaTopic.save()
-            numTopic += 1
-            for word in topic[1].split(" + "):
-                data = word.split('*')
-                ldaWord = LdaWord(ldaTopic=ldaTopic, word=data[1], weight=data[0])
-                ldaWord.save()
+            lda.append(topic[1].replace(" + ", ' '))
+
+        ldaLezione = LdaLezione(lezione=lezione, lda=lda)
+        ldaLezione.save()
 
     def saveOnDBCorso(self, corso):
         topics = self.ldamodel.print_topics(num_words=4)
         lda = []
 
         for topic in topics:
-            lda.append(topic[1].split(" + "))
+            lda.append(topic[1].replace(" + ", ' '))
 
         ldaCorso = LdaCorso(corso=corso, lda=lda)
         ldaCorso.save()

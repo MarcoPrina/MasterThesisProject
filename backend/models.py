@@ -1,4 +1,4 @@
-from django.contrib.postgres.fields import ArrayField
+from django_better_admin_arrayfield.models.fields import ArrayField
 from django.db import models
 
 
@@ -112,29 +112,6 @@ class BinomioCountForCourse(models.Model):
         verbose_name_plural = "BinomiCountsForCourses"
 
 
-class LdaTopic(models.Model):
-    lezione = models.ForeignKey(Lezione, on_delete=models.CASCADE)
-    numTopic = models.IntegerField()
-
-    def __str__(self):
-        return self.lezione.nome + ', topic #' + str(self.numTopic)
-
-    class Meta:
-        verbose_name_plural = "LdaTopics"
-
-
-class LdaWord(models.Model):
-    ldaTopic = models.ForeignKey(LdaTopic, on_delete=models.CASCADE)
-    word = models.CharField(max_length=50)
-    weight = models.FloatField()
-
-    def __str__(self):
-        return self.ldaTopic.__str__() + ': ' + self.word + ' * ' + str(self.weight)
-
-    class Meta:
-        verbose_name_plural = "LdaWords"
-
-
 class Sentence(models.Model):
     lezione = models.ForeignKey(Lezione, on_delete=models.CASCADE)
     sentence = models.TextField()
@@ -144,13 +121,24 @@ class Sentence(models.Model):
 class LdaCorso(models.Model):
     corso = models.ForeignKey(Corso, on_delete=models.CASCADE)
     lda = ArrayField(
-        ArrayField(
-            models.CharField(max_length=30, blank=True)
-        )
+        models.CharField(max_length=110)
     )
 
     def __str__(self):
-        return self.corso.nome  # + ', topic #' + str(self.numTopic)
+        return self.corso.nome
 
     class Meta:
         verbose_name_plural = "LdaCorsi"
+
+
+class LdaLezione(models.Model):
+    lezione = models.ForeignKey(Lezione, on_delete=models.CASCADE)
+    lda = ArrayField(
+        models.CharField(max_length=110)
+    )
+
+    def __str__(self):
+        return self.lezione.corso.nome + ': ' + self.lezione.nome
+
+    class Meta:
+        verbose_name_plural = "LdaLezioni"
