@@ -47,6 +47,9 @@ class FindBinomi():
         return self
 
     def saveOnDB(self, lezione):
+        Binomio.objects.filter(lezione=lezione).delete()
+        BinomioCountForLesson.objects.filter(lezione=lezione).delete()
+
         for binomio in self.binomi:
             bin = Binomio(
                 word1=binomio['word1'],

@@ -88,11 +88,12 @@ class AnalyzeVideo(threading.Thread):
                 videoID = parse_qs(parsed.query)['v'][0]
                 parser.getCaptionFromYoutubeID(videoID, 'Credentials/client_secret_youtube.json')
             else:
-                parser.getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/8/caption.txt')
+                parser.getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/20/caption.txt')
 
             parser.parse(process_lda=self.lezione.process_lda)
 
             with transaction.atomic():
+                # TODO: cancellare i dati vecchi se presenti
                 parser.saveOnDB(lezione=self.lezione, process_lda=self.lezione.process_lda)
 
                 self.lezione.processata = True

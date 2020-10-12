@@ -37,6 +37,8 @@ class FindWords():
         return self.ordered
 
     def saveOnDB(self, lezione):
+        Word.objects.filter(lezione=lezione).delete()
+        WordCountForLesson.objects.filter(lezione=lezione).delete()
 
         for word in self.words:
             wor = Word(word=word['word'], time_stamp=word["time_stamp"], lezione=lezione)

@@ -61,6 +61,7 @@ class Tokenize():
             time.sleep(7)
 
     def saveOnDB(self, lezione, posTag):
+        Sentence.objects.filter(lezione=lezione).delete()
         buffSentence = ''
         number = 0
         for num, token in enumerate(self.tokenizedCaptions):

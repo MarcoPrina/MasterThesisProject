@@ -10,6 +10,7 @@ from backend.models import WordCountForLesson, WordCountForCourse, BinomioCountF
 class AggregateVideos:
 
     def genereteTotalLda(self, corso):
+        # Sentence.objects.filter(corso=corso).delete()  #TODO:scommentare, non mi serve ora per dei test
         sentences = Sentence.objects.filter(lezione__corso=corso).order_by('number')
 
         tokenSentences = []
@@ -17,7 +18,7 @@ class AggregateVideos:
             tokenSentences.append(sentence.sentence.split(' '))
 
         lda = LDA()
-        lda.findTopicFromSenteces(tokenSentences, nTopic=4)
+        lda.findTopicFromSenteces(tokenSentences, nTopic=10)
         lda.saveOnDBCorso(corso)
         return self
 
@@ -39,4 +40,3 @@ class AggregateVideos:
             binomioCountForCourse = BinomioCountForCourse(
                 corso_id=binomio['corso'], binomio=binomio['binomio'], count=binomio['count'])
             binomioCountForCourse.save()
-

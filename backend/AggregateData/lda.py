@@ -48,7 +48,7 @@ class LDA():
         pyLDAvis.show(vis)'''
 
     def saveOnDBLezione(self, lezione):
-
+        LdaLezione.objects.filter(lezione=lezione).delete()
         topics = self.ldamodel.print_topics(num_words=4)
         lda = []
 
