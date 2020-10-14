@@ -206,7 +206,7 @@ function query() {
 	var query = document.getElementById("query").value;
 	var xhr = new XMLHttpRequest();
 	xhr.responseType = 'json'
-	xhr.open("GET", backendURL + "/search?corso=" + corso + "&lezione=" + lezione + "&query=" + query, true); // da aggiustare
+	xhr.open("GET", backendURL + "/search?corso=" + corso + "&lezione=" + lezione + "&query=" + query, true);
 	//xhr.setRequestHeader("X-My-Custom-Header", "some value");
 	xhr.onreadystatechange = function() {
 		if (this.readyState === 4 && this.status === 200) {
@@ -256,7 +256,7 @@ function makeTimeList(time_list) {
     var offset =  Number(time[0])*60*60 +  Number(time[1])*60 +  Number(time[2].split('.')[0])
     if (offset > 5)
       offset -= 5
-    link.setAttribute('href', time_list[i].lezione.kiro_url + '#t=' + offset);
+    link.setAttribute('href', time_list[i].lezione.kiro_url + '&timejw=' + offset);
     link.innerHTML = time_list[i].lezione.nome + ': ' + time_list[i].time_stamp;
 
     item.appendChild(link);
