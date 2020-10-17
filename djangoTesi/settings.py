@@ -19,8 +19,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'i+_d=zb74bt_hg=&uajs#q_@hsk$2^%al&-4chj$@k93ephfr#'
+with open('Credentials/django_password.txt') as f:
+    SECRET_KEY = f.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -86,13 +86,15 @@ WSGI_APPLICATION = 'djangoTesi.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
+with open('Credentials/db_password.txt') as f:
+    db_password = f.read().strip()
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'tesidjango',
         'USER': 'admin',
-        'PASSWORD': 'calamari fritti in pastella',
+        'PASSWORD': db_password,
         'HOST': 'localhost',
         'PORT': '',
     }
