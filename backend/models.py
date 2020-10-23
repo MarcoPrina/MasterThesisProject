@@ -63,6 +63,7 @@ class WordCountForCourse(models.Model):
     word = models.CharField(max_length=50)
     corso = models.ForeignKey(Corso, on_delete=models.CASCADE)
     count = models.IntegerField('Conteggio', db_index=True)
+    idf = models.FloatField()
 
     def __str__(self):
         return self.word + ' ' + str(self.count)
