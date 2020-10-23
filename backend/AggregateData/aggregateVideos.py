@@ -28,14 +28,14 @@ class AggregateVideos:
             .filter(lezione__corso=corso) \
             .values('lezione__corso', 'word') \
             .annotate(corso=F('lezione__corso'), count=Sum('count'), idf=Count('lezione', distinct=True)) \
-            .values('corso', 'word', 'count', 'idf')
+            .values('corso', 'word', 'count', 'idf', 'id')
         tot_lesson = Corso.objects.filter(pk=corso.pk).annotate(tot_lesson=Count('lezione', distinct=True)).first().tot_lesson
         for word in wordsAggregation:
             idf = tot_lesson / word['idf']
             wordCountForCourse = WordCountForCourse(corso_id=word['corso'], word=word['word'], count=word['count'],
                                                     idf=idf)
             wordCountForCourse.save()
-            wcfl = WordCountForLesson.objects.get(pk=word.pk)
+            wcfl = WordCountForLesson.objects.get(pk=word['id'])
             wcfl.tfidf = wcfl.tf * idf
             wcfl.save()
 
