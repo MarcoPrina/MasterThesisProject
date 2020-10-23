@@ -23,7 +23,7 @@ class ParseVideo:
     def __init__(self) -> None:
         self.tokenizer = Tokenize()
         self.lda = LDA()
-        self.prioritize = FindWords()
+        self.findWords = FindWords()
         self.findBinomi = FindBinomi()
         self.usableCaption = ''
         self.posTag = ['S', 'A']
@@ -54,17 +54,17 @@ class ParseVideo:
         return self
 
     def parse(self, process_lda):
-        sentencesWithToken = self.tokenizer.getTokens(self.usableCaption)
+        tokenizedLesson = self.tokenizer.getTokens(self.usableCaption)
 
-        self.findBinomi.searchForTwo(sentencesWithToken, posTag=self.posTag)
-        self.prioritize.search(sentencesWithToken, posTag=self.posTag)
+        self.findBinomi.searchForTwo(tokenizedLesson, posTag=self.posTag)
+        self.findWords.search(tokenizedLesson, posTag=self.posTag)
         if process_lda:
-            self.lda.findTopicFromTokens(sentencesWithToken, posTag=self.posTag, nTopic=8)
+            self.lda.findTopicFromTokens(tokenizedLesson, posTag=self.posTag, nTopic=8)
 
     def saveOnDB(self, lezione, process_lda):
         self.tokenizer.saveOnDB(lezione=lezione, posTag=self.posTag)
         self.findBinomi.saveOnDB(lezione=lezione)
-        self.prioritize.saveOnDB(lezione=lezione)
+        self.findWords.saveOnDB(lezione=lezione)
         if process_lda:
             self.lda.saveOnDBLezione(lezione=lezione)
 
@@ -87,9 +87,9 @@ class AnalyzeVideo(threading.Thread):
                 os.remove(self.lezione.video.name)
                 os.remove(self.lezione.video.name.replace("Video", "Audio", 1) + '.flac')
             elif 'youtube' in self.lezione.video_url:
-                # parsed = urlparse.urlparse(self.lezione.video_url)
-                # videoID = parse_qs(parsed.query)['v'][0]
-                # parser.getCaptionFromYoutubeID(videoID, self.youtubeCredential)
+                parsed = urlparse.urlparse(self.lezione.video_url)
+                videoID = parse_qs(parsed.query)['v'][0]
+                parser.getCaptionFromYoutubeID(videoID, self.youtubeCredential)
                 parser.getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/20/caption.txt')
             else:
                 videoID = self.lezione.video_url.split('/')[-1]
