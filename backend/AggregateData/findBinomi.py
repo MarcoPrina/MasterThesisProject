@@ -18,12 +18,12 @@ class FindBinomi():
         for token in tokenizedCaptions:
             totBinomi += 1
             if not first and token['pos'].startswith(tuple(posTag)):
-                binomio = pre['word'] + ' ' + token['word']
-                lemmaBinomio = pre['word'][:-1] + ' ' + token['word'][:-1]
+                binomio = pre['word'].lower() + ' ' + token['word'].lower()
+                lemmaBinomio = pre['word'][:-1].lower() + ' ' + token['word'][:-1].lower()
 
                 self.binomi.append({
-                    'word1': pre['word'][:-1],
-                    'word2': token['word'][:-1],
+                    'word1': pre['word'][:-1].lower(),
+                    'word2': token['word'][:-1].lower(),
                     'time_stamp': pre['time']
                 })
 

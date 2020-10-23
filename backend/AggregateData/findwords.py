@@ -17,19 +17,19 @@ class FindWords():
             if token['pos'].startswith(tuple(posTag)):
 
                 self.words.append({
-                    'word': token['word'][:-1],
+                    'word': token['word'][:-1].lower(),
                     'time_stamp': token['time']
                 })
 
-                if token['word'] in words:
-                    words[token['word']]['counter'] += 1
-                    words[token['word']]['pos'][token['pos']] += 1
+                if token['word'].lower() in words:
+                    words[token['word'].lower()]['counter'] += 1
+                    words[token['word'].lower()]['pos'][token['pos']] += 1
                 else:
-                    words[token['word']] = {}
-                    words[token['word']]['counter'] = 1
-                    words[token['word']]['word'] = token['word']
-                    words[token['word']]['pos'] = defaultdict(int)
-                    words[token['word']]['pos'][token['pos']] += 1
+                    words[token['word'].lower()] = {}
+                    words[token['word'].lower()]['counter'] = 1
+                    words[token['word'].lower()]['word'] = token['word'].lower()
+                    words[token['word'].lower()]['pos'] = defaultdict(int)
+                    words[token['word'].lower()]['pos'][token['pos']] += 1
 
         for word in words:
             words[word]['tf'] = words[word]['counter'] / totWords
