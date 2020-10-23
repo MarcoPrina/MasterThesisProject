@@ -51,6 +51,7 @@ class WordCountForLesson(models.Model):
     lezione = models.ForeignKey(Lezione, on_delete=models.CASCADE)
     count = models.IntegerField('Conteggio', db_index=True)
     tf = models.FloatField()
+    tfidf = models.FloatField(null=True, blank=True,)
 
     def __str__(self):
         return self.word + ' ' + str(self.count)
@@ -93,6 +94,7 @@ class BinomioCountForLesson(models.Model):
     lezione = models.ForeignKey(Lezione, on_delete=models.CASCADE)
     count = models.IntegerField('Conteggio', db_index=True)
     tf = models.FloatField()
+    tfidf = models.FloatField(null=True, blank=True,)
 
     def __str__(self):
         return self.binomio + ' ' + str(self.count)
@@ -105,6 +107,7 @@ class BinomioCountForCourse(models.Model):
     binomio = models.CharField(max_length=50)
     corso = models.ForeignKey(Corso, on_delete=models.CASCADE)
     count = models.IntegerField('Conteggio', db_index=True)
+    idf = models.FloatField()
 
     def __str__(self):
         return self.binomio + ' ' + str(self.count)

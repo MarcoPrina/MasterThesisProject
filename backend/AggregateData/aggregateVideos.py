@@ -35,6 +35,9 @@ class AggregateVideos:
             wordCountForCourse = WordCountForCourse(corso_id=word['corso'], word=word['word'], count=word['count'],
                                                     idf=idf)
             wordCountForCourse.save()
+            wcfl = WordCountForLesson.objects.get(pk=word.pk)
+            wcfl.tfidf = wcfl.tf * idf
+            wcfl.save()
 
     def genereteCommonBinomi(self, corso):
         BinomioCountForCourse.objects.filter(corso=corso).delete()
