@@ -57,9 +57,7 @@ class CorsiAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.save()
         if obj.process_corso:
-            AggregateVideos().genereteCommonWords(obj) # TODO: farlo partire come nuovo thread
-            #AggregateVideos().genereteCommonBinomi(obj)
-            #AggregateVideos().genereteTotalLda(obj)
+            AggregateVideos(obj).start()
 
 
 def join_binomio(obj):
@@ -75,7 +73,8 @@ class BinomiAdmin(admin.ModelAdmin):
 
 
 class BinomiCountLessonAdmin(admin.ModelAdmin):
-    list_display = ('binomio', 'lezione', 'count')
+    list_display = ('binomio', 'lezione', 'count', 'tfidf')
+    list_filter = ('lezione', 'lezione__corso')
     search_fields = ['binomio']
 
 
