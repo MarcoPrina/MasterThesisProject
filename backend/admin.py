@@ -44,6 +44,7 @@ class LezioniAdmin(admin.ModelAdmin):
     readonly_fields = ('processata',)
     list_display = ('nome', 'corso', 'video_url', 'kiro_url')
     search_fields = ['nome']
+    list_filter = ['corso']
 
     def save_model(self, request, obj, form, change):
         obj.save()
@@ -70,6 +71,7 @@ join_binomio.short_description = 'Binomio'
 class BinomiAdmin(admin.ModelAdmin):
     list_display = (join_binomio, 'lezione',)
     search_fields = ['word1', 'word2']
+    list_filter = ('lezione', 'lezione__corso')
 
 
 class BinomiCountLessonAdmin(admin.ModelAdmin):
@@ -81,11 +83,13 @@ class BinomiCountLessonAdmin(admin.ModelAdmin):
 class BinomiCountCourseAdmin(admin.ModelAdmin):
     list_display = ('binomio', 'corso', 'count')
     search_fields = ['binomio']
+    list_filter = ['corso']
 
 
 class WordsAdmin(admin.ModelAdmin):
     list_display = ('word', 'lezione',)
     search_fields = ['word']
+    list_filter = ('lezione', 'lezione__corso')
 
 
 class WordsCountLessonAdmin(admin.ModelAdmin):
@@ -97,11 +101,7 @@ class WordsCountLessonAdmin(admin.ModelAdmin):
 class WordsCountCorsoAdmin(admin.ModelAdmin):
     list_display = ('word', 'corso', 'count', 'idf')
     search_fields = ['word']
-
-
-class LdaWordAdmin(admin.ModelAdmin):
-    list_display = ('word', 'ldaTopic', 'weight')
-    search_fields = ['word']
+    list_filter = ['corso']
 
 
 class SentenceAdmin(admin.ModelAdmin):
@@ -136,6 +136,7 @@ class LdaLezioneAdminForm(ModelForm):
 class LdaLezioneAdmin(admin.ModelAdmin, DynamicArrayMixin):
     form = LdaLezioneAdminForm
     list_display = ['lezione']
+    list_filter = ['lezione__corso']
 
 
 admin_site.register(Lezione, LezioniAdmin)
