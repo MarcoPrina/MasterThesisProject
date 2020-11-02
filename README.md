@@ -27,3 +27,5 @@ To better understand the various parts of the program and their operation, I pro
 
 First, you need to enter the data of the courses and lessons in the backend, to do this we go to the server/admin site and log in with the data entered when creating the Django superuser.
 
+![Home page](screenshot/Screenshot_2020-10-19 Analisi corsi Unipv.png?raw=true "Title")
+
