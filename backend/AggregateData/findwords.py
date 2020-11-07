@@ -21,15 +21,15 @@ class FindWords():
                     'time_stamp': token['time']
                 })
 
-                if token['word'].lower() in words:
-                    words[token['word'].lower()]['counter'] += 1
-                    words[token['word'].lower()]['pos'][token['pos']] += 1
+                if token['word'][:-1].lower() in words:
+                    words[token['word'][:-1].lower()]['counter'] += 1
+                    words[token['word'][:-1].lower()]['pos'][token['pos']] += 1
                 else:
-                    words[token['word'].lower()] = {}
-                    words[token['word'].lower()]['counter'] = 1
-                    words[token['word'].lower()]['word'] = token['word'].lower()
-                    words[token['word'].lower()]['pos'] = defaultdict(int)
-                    words[token['word'].lower()]['pos'][token['pos']] += 1
+                    words[token['word'][:-1].lower()] = {}
+                    words[token['word'][:-1].lower()]['counter'] = 1
+                    words[token['word'][:-1].lower()]['word'] = token['word'].lower()
+                    words[token['word'][:-1].lower()]['pos'] = defaultdict(int)
+                    words[token['word'][:-1].lower()]['pos'][token['pos']] += 1
 
         for word in words:
             words[word]['tf'] = words[word]['counter'] / totWords
