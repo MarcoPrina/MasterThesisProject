@@ -59,7 +59,7 @@ class ParseVideo:
         self.findBinomi.searchForTwo(tokenizedLesson, posTag=self.posTag)
         self.findWords.search(tokenizedLesson, posTag=self.posTag)
         if process_lda:
-            self.lda.findTopicFromTokens(tokenizedLesson, posTag=self.posTag, nTopic=8)
+            self.lda.findTopicFromTokens(tokenizedLesson, posTag=self.posTag, nTopic=16)
 
     def saveOnDB(self, lezione, process_lda):
         self.tokenizer.saveOnDB(lezione=lezione, posTag=self.posTag)
@@ -90,7 +90,7 @@ class AnalyzeVideo(threading.Thread):
                 parsed = urlparse.urlparse(self.lezione.video_url)
                 videoID = parse_qs(parsed.query)['v'][0]
                 parser.getCaptionFromYoutubeID(videoID, self.youtubeCredential)
-                parser.getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/20/caption.txt')
+                # parser.getCaptionFromFile('/home/marco/PycharmProjects/AggregateData/Outputs/1/caption.txt')
             else:
                 videoID = self.lezione.video_url.split('/')[-1]
                 VimeoDownload(self.vimeoCredential).get(videoID)
