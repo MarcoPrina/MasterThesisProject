@@ -7,7 +7,7 @@ from django.db.models import Sum, F, Count, Q
 
 from backend.AggregateData.lda import LDA
 from backend.models import WordCountForLesson, WordCountForCourse, BinomioCountForCourse, BinomioCountForLesson, \
-    Sentence, Corso, Lezione
+    Sentence, Corso, Lezione, LdaCorso
 
 
 class AggregateVideos(threading.Thread):
@@ -20,9 +20,10 @@ class AggregateVideos(threading.Thread):
         self.genereteCommonBinomi()
         self.genereteCommonWords()
         self.genereteTotalLda()
+        print('fine')
 
     def genereteTotalLda(self):
-        Sentence.objects.filter(corso=self.corso).delete()
+        LdaCorso.objects.filter(corso=self.corso).delete()
         tokenSentences = []
 
         '''
