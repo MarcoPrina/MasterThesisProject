@@ -30,9 +30,9 @@ class WordListSerializer(serializers.ModelSerializer):
         corso = self.context.get("corso")
         lezione = self.context.get("lezione")
         if lezione:
-            word = Word.objects.filter(word=obj.word, lezione=lezione)
+            word = Word.objects.filter(word=obj.word, lezione=lezione).order_by("lezione", "time_stamp")
         else:
-            word = Word.objects.filter(word=obj.word, lezione__corso=corso)
+            word = Word.objects.filter(word=obj.word, lezione__corso=corso).order_by("lezione", "time_stamp")
         return BinomiSerializer(word, many=True).data
 
 
@@ -59,9 +59,9 @@ class BinomiListSerializer(serializers.ModelSerializer):
         corso = self.context.get("corso")
         lezione = self.context.get("lezione")
         if lezione:
-            binomi = Binomio.objects.filter(word1=obj.word1, word2=obj.word2, lezione=lezione)
+            binomi = Binomio.objects.filter(word1=obj.word1, word2=obj.word2, lezione=lezione).order_by("lezione", "time_stamp")
         else:
-            binomi = Binomio.objects.filter(word1=obj.word1, word2=obj.word2, lezione__corso=corso)
+            binomi = Binomio.objects.filter(word1=obj.word1, word2=obj.word2, lezione__corso=corso).order_by("lezione", "time_stamp")
         return BinomiSerializer(binomi, many=True).data
 
 

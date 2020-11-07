@@ -38,7 +38,7 @@ class CorsoDetails(APIView):
         except Corso.DoesNotExist:
             return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
-        lezioni = Lezione.objects.filter(corso=corso)
+        lezioni = Lezione.objects.filter(corso=corso).order_by("id")
         serializer = LezioneSerializer(lezioni, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -103,7 +103,7 @@ class Search(APIView):
                 except Lezione.DoesNotExist:
                     return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
-                word = Word.objects.filter(word__iexact=words[0], lezione=lezione).distinct('word')
+                word = Word.objects.filter(word__icontains=words[0], lezione=lezione).distinct('word')
             elif corsoPk:
                 try:
                     corso = Corso.objects.get(pk=corsoPk)
@@ -111,7 +111,7 @@ class Search(APIView):
                 except Corso.DoesNotExist:
                     return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
-                word = Word.objects.filter(word__iexact=words[0], lezione__corso=corso).distinct('word')
+                word = Word.objects.filter(word__icontains=words[0], lezione__corso=corso).distinct('word')
             else:
                 return Response('need lezione or corso parameter', status=status.HTTP_400_BAD_REQUEST)
             serializer = WordListSerializer(word, context={'corso': corsoPk, 'lezione': lezionePk}, many=True)
